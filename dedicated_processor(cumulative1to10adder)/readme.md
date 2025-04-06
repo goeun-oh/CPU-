@@ -1,6 +1,8 @@
 # dedicated counter 설계
 0부터 10까지 더하는 processor 설게하기
 
+ ![전체 block diagram](../blockdiagram.png)
+
 ## 설계 과정
 1. C 언어로 먼저 구현 (while문 활용)
 2. datapath 구조 설계
@@ -32,23 +34,26 @@ int main() {
     return sum;
 }
 ```
-### datapath 구조 설계
 
+### datapath 구조 설계
+ ![Shcematic](../datapathBlockdiagram.png)
 
 ### C언어 코드 순서를 ASM 차트로 만들어 control Unit 설계
+ ![Shcematic](../asm.png)
+
+- n 이 먼저 증가하고 그 다음 증가된 n 의 값을 피연산자로 가져와야하므로 state를 나누어 이를 분리했다.
+- 먼저 `S1`에서 `adderMuxSel`을 0으로 변경하여 n+1이 연산되도록 한 다음, 다음 state인 `Nup`에서 이 값이 register에 반영되도록 `nEn`을 1로 변경했다.
+- 이 다음 `SUMup` stage에서 sum 값 계산을 위해 `adderMuxSel`을 1로 변경하여 바뀐 n의 값을 피연산자로 가져왔고 해당 값을 n register가 반영하지 않게 하기 위해 `nEn`을 0으로 변경했다. 
+- 그 다음 stage 인 `S4`에서 sum 계산 값이 register에 반영되도록 하기위해 `sumEn`을 1로 변경하였다. 
 
 
 ### top으로 묶어 마무리
+- Schematic
+![Shcematic](../schematic.png)
 
 
-
-
-### Schematic
- ![Shcematic](../schematic.png)
-
-
-### Simulation
+- Simulation
 ![Simulation](../simulation.png)
 
-   
+
 
