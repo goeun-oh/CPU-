@@ -2,7 +2,7 @@
 
 0부터 10까지 더하는 processor 설게하기
 
-<img src = "https://github.com/goeun-oh/CPU-/blob/main/dedicated_processor(cumulative1to10adder)/blockdiagram.png" width=500px>
+<img src = "https://github.com/goeun-oh/CPU-/blob/main/dedicated_processor(cumulative1to10adder)/blockdiagram.png">
 
 ## 설계 과정
 
