@@ -39,11 +39,11 @@ int main() {
 
 ### datapath 구조 설계
 
-<img src = "https://github.com/goeun-oh/CPU-/blob/main/dedicated_processor(cumulative1to10adder)/datapathBlockdiagram.png" width=300px>
+<img src = "https://github.com/goeun-oh/CPU-/blob/main/dedicated_processor(cumulative1to10adder)/datapathBlockdiagram.png">
 
 ### C언어 코드 순서를 ASM 차트로 만들어 control Unit 설계
 
-<img src = "https://github.com/goeun-oh/CPU-/blob/main/dedicated_processor(cumulative1to10adder)/asm.png" width=300px>
+<img src = "https://github.com/goeun-oh/CPU-/blob/main/dedicated_processor(cumulative1to10adder)/asm.png">
 
 - n 이 먼저 증가하고 그 다음 증가된 n 의 값을 피연산자로 가져와야하므로 state를 나누어 이를 분리했다.
 - 먼저 `S1`에서 `adderMuxSel`을 0으로 변경하여 n+1이 연산되도록 한 다음, 다음 state인 `Nup`에서 이 값이 register에 반영되도록 `nEn`을 1로 변경했다.
@@ -54,8 +54,8 @@ int main() {
 
 - Schematic
 
-<img src="https://github.com/goeun-oh/CPU-/blob/main/dedicated_processor(cumulative1to10adder)/schematic.png" width=300px>
+<img src="https://github.com/goeun-oh/CPU-/blob/main/dedicated_processor(cumulative1to10adder)/schematic.png" >
 
 - Simulation
 
-<img src="https://github.com/goeun-oh/CPU-/blob/main/dedicated_processor(cumulative1to10adder)/simulation.png" width=300px>
+<img src="https://github.com/goeun-oh/CPU-/blob/main/dedicated_processor(cumulative1to10adder)/simulation.png" >
