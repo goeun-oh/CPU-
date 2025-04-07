@@ -40,6 +40,10 @@ int main() {
 ```
 
 ### datapath 구조 설계
+***Adder를 하나로 구성***
+- 일반적인 CPU는 ALU가 하나이다.
+- mux가 ALU 보다 가격이 더 싸다.
+- 따라서 Adder를 하나로 구성한다.
 
 <img src = "https://github.com/goeun-oh/CPU-/blob/main/dedicated_processor(cumulative1to10adder)/datapathBlockdiagram.png">
 
