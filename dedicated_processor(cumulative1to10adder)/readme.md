@@ -32,8 +32,9 @@ int main() {
     while (i <= 10) {
         i++;
         sum += i;
+        outPort=sum;
     }
-    return sum;
+    return 0;
 }
 ```
 
