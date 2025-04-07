@@ -7,12 +7,12 @@ module top_cumulative_1to10(
     output logic [7:0] outPort
     );
     
-    logic nlt10, nSel, sumSel, adderMuxSel, nEn, sumEn, outBuf;
+    logic nle10, nSel, sumSel, adderMuxSel, nEn, sumEn, outBuf;
 
     controlUnit CU(
         .clk(clk),
         .rst(rst),
-        .nlt10(nlt10),
+        .nle10(nle10), //less than or equal to 10
         .nSel(nSel),
         .sumSel(sumSel),
         .adderMuxSel(adderMuxSel),
@@ -31,7 +31,7 @@ module top_cumulative_1to10(
         .nEn(nEn),
         .sumEn(sumEn),
         .outBuf(outBuf),
-        .nlt10(nlt10),
+        .nle10(nle10),
         .o_sum(outPort)
     );
 

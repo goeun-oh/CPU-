@@ -7,7 +7,7 @@ module dataPath (
     input  logic       nEn,
     input  logic       sumEn,
     input  logic       outBuf,
-    output logic       nlt10,
+    output logic       nle10,
     output logic [7:0] o_sum
 );
 
@@ -65,7 +65,7 @@ module dataPath (
     comparator COMP (
         .a (q_n),
         .b (8'h0B),
-        .lt(nlt10)
+        .lt(nle10)
     );
 
     buffer BUF (

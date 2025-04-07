@@ -1,7 +1,7 @@
 module controlUnit (
     input  logic clk,
     input  logic rst,
-    input  logic nlt10,
+    input  logic nle10,
     output logic nSel,
     output logic sumSel,
     output logic adderMuxSel,
@@ -43,7 +43,7 @@ module controlUnit (
                 nEn=0;
                 sumEn=0;
                 outBuf=0;
-                if (nlt10) begin
+                if (nle10) begin
                     next= Nup;
                 end else begin
                     next= HALT;
