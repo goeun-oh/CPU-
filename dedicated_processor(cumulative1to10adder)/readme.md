@@ -34,6 +34,7 @@ int main() {
         sum += i;
         outPort=sum;
     }
+    halt;
     return 0;
 }
 ```
