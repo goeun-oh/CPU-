@@ -31,7 +31,9 @@ module ControlUnit (
         case (state)
             //{RFSrcMuxSel, readAddr1, readAddr2, writeAddr, writeEn, outBuf} = out_signals;
             S0: begin // R1 = 0
-                out_signals = 12'b0_000_000_001_1_0;
+                out_signals = 12'b0_000_000_001_1_0; 
+                //CPU에서의 machine 코드(instructions), machine 코드가 datapath로 들어간다.
+                //이 명령어들이 ROM에 들어가 하나씩 읽으면 그것이 CPU다
                 state_next     = S1;
             end
             S1: begin // R2 = 0
