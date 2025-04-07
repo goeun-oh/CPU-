@@ -10,7 +10,6 @@ module DataPath (
     input  logic       writeEn,
     input  logic       outBuf,
     input logic [2:0] aluOP,
-    output logic       iLe10,
     output logic [7:0] outPort,
     output logic aBTb
 );
@@ -34,15 +33,10 @@ module DataPath (
         .rData2(RFReadData2)
     );
 
-    comparator U_Comp_iLe10 (
-        .a (RFReadData1),
-        .b (8'd10),
-        .le(iLe10)
-    );
     comparator U_Comp_aBTb (
         .a (RFReadData1),
         .b (RFReadData2),
-        .le(aBTb)
+        .bt(aBTb)
     );
     ALU U_ALU (
         .aluOP(aluOP),
@@ -189,8 +183,8 @@ endmodule
 module comparator (
     input  logic [7:0] a,
     input  logic [7:0] b,
-    output logic       le
+    output logic       bt
 );
-    assign le = (a <= b);
+    assign bt = (a > b);
 endmodule
 

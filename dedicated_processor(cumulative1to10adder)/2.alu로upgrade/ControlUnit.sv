@@ -10,8 +10,7 @@ module ControlUnit (
     output logic       writeEn,
     output logic       outBuf,
     output logic [2:0] aluOP,
-    input  logic       aBTb,
-    input  logic       iLe10
+    input  logic       aBTb
 );
     typedef enum { S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11 } state_e;
     

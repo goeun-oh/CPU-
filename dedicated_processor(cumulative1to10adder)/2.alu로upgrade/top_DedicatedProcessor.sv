@@ -12,9 +12,33 @@ module top_DedicatedProcessor (
     logic [2:0] writeAddr;
     logic       writeEn;
     logic       outBuf;
-    logic       iLe10;
+    logic       aBTb;
+    logic [2:0] aluOP;
 
-    DataPath U_DataPath (.*);
-    ControlUnit U_ControlUnit (.*);
+    DataPath U_DataPath (
+        .clk(clk),
+        .reset(reset),
+        .RFSrcMuxSel(RFSrcMuxSel),
+        .readAddr1(readAddr1),
+        .readAddr2(readAddr2),
+        .writeAddr(writeAddr),
+        .writeEn(writeEn),
+        .outBuf(outBuf),
+        .aluOP(aluOP),
+        .outPort(outPort),
+        .aBTb(aBTb)
+    );
+    ControlUnit U_ControlUnit (
+        .clk(clk),
+        .reset(reset),
+        .RFSrcMuxSel(RFSrcMuxSel),
+        .readAddr1(readAddr1),
+        .readAddr2(readAddr2),
+        .writeAddr(writeAddr),
+        .writeEn(writeEn),
+        .outBuf(outBuf),
+        .aluOP(aluOP),
+        .aBTb(aBTb)
+    );
 
 endmodule
