@@ -12,7 +12,7 @@ module ControlUnit (
     output logic [2:0] aluOP,
     input  logic       aBTb
 );
-    typedef enum { S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11 } state_e;
+    typedef enum { S0, S1, S2, S3, outS3, S4, outS4, S5, outS5, S6, outS6, S7, outS7, S8, outS8, S9, outS9, S10, S11 } state_e;
     
     state_e state, state_next;
     logic [14:0] out_signals;
@@ -31,8 +31,8 @@ module ControlUnit (
         out_signals = 0;
         case (state)
             //{RFSrcMuxSel, readAddr1, readAddr2, writeAddr, writeEn, outBuf} = out_signals;
-            S0: begin // R1 = 0
-                out_signals = 15'b0_000_000_001_1_0_000; 
+            S0: begin // R1 = 1
+                out_signals = 15'b1_000_000_001_1_0_000; 
                 //CPU에서의 machine 코드(instructions), machine 코드가 datapath로 들어간다.
                 //이 명령어들이 ROM에 들어가 하나씩 읽으면 그것이 CPU다
                 state_next     = S1;
@@ -41,36 +41,64 @@ module ControlUnit (
                 out_signals = 15'b0_000_000_010_1_0_000;
                 state_next     = S2;
             end
-            S2: begin // R3 = 1;
-                out_signals = 15'b1_000_000_011_1_0_000;
+            S2: begin // R3 = 0;
+                out_signals = 15'b0_000_000_011_1_0_000;
                 state_next     = S3;
             end
             S3: begin //r4=r1+r1 
-                out_signals = 15'b0_001_001_100_1_1_000;
-                state_next = S4;
+                out_signals = 15'b0_001_001_100_1_0_000;
+                state_next = outS3;
+            end
+            outS3: begin // show r4
+                out_signals = 15'b0_100_xxx_xxx_0_1_xxx;
+                state_next     = S4;
             end
             S4: begin // r5=r4+r4
-                out_signals = 15'b0_100_100_101_1_1_000;
+                out_signals = 15'b0_100_100_101_1_0_000;
+                state_next     = outS4;
+            end
+            outS4: begin // show r5
+                out_signals = 15'b0_101_xxx_xxx_0_1_xxx;
                 state_next     = S5;
             end
             S5: begin // r6=r5-r1
-                out_signals = 15'b0_101_001_110_1_1_001;
+                out_signals = 15'b0_101_001_110_1_0_001;
+                state_next     = outS5;
+            end
+            outS5: begin // show r6
+                out_signals = 15'b0_110_xxx_xxx_0_1_xxx;
                 state_next     = S6;
             end
             S6: begin // r2=r6&r4
-                out_signals = 15'b0_110_100_010_1_1_010;
+                out_signals = 15'b0_110_100_010_1_0_010;
+                state_next     = outS6;
+            end
+            outS6: begin // show r2
+                out_signals = 15'b0_010_xxx_xxx_0_1_xxx;
                 state_next     = S7;
             end
             S7: begin //r3=r2|r5
                 out_signals = 15'b0_010_101_011_1_1_011;
+                state_next     = outS7;
+            end
+            outS7: begin // show r3
+                out_signals = 15'b0_011_xxx_xxx_0_1_xxx;
                 state_next     = S8;
             end
             S8: begin //r7=r3^r2
-                out_signals = 15'b0_011_010_111_1_1_100;
+                out_signals = 15'b0_011_010_111_1_0_100;
+                state_next     = outS8;
+            end
+            outS8: begin // show r7
+                out_signals = 15'b0_111_xxx_xxx_0_1_xxx;
                 state_next     = S9;
             end
             S9: begin //r7=~r7
-                out_signals = 15'b0_111_xxx_111_1_1_101;
+                out_signals = 15'b0_111_xxx_111_1_0_101;
+                state_next     = outS9;
+            end
+            outS9: begin // show r7
+                out_signals = 15'b0_111_xxx_xxx_0_1_xxx;
                 state_next     = S10;
             end
             S10: begin
