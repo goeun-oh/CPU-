@@ -16,6 +16,3 @@
     - ALU
     - Data Mem (RAM)
 
-
-** R-type instruction 구현 **
-
