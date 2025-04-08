@@ -8,3 +8,11 @@
 - 명령어 type
 ![alt text]({7F670988-08F3-4C11-B74D-95147E9E8F57}.png)
 
+- CPU 기본 모듈 (하버드 구조)
+    ![alt text](image.png)
+    - PC (program counter)
+    - instruction mem(ROM, FLASH)
+    - Register File
+    - ALU
+    - Data Mem (RAM)
+    
