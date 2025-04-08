@@ -8,6 +8,12 @@ module RV32I_Core(
     logic [1:0] aluOP;
 
     controlUnit CU(.*);
-    dataPath DP(.*);
-
+    dataPath DP(
+        .clk(clk),
+        .rst(rst),
+        .instrCode(instrCode),
+        .aluOP(aluOP),
+        .regFileWe(regFileWe),
+        .instrMemAddr(instrMemAddr)   
+    );
 endmodule
