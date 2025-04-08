@@ -119,7 +119,7 @@ class scoreboard;
             if (ram_tr.we) begin
                 ref_model[ram_tr.addr] = ram_tr.rData;
             end else begin
-                if(ref_model[ram_tr.addr] == ram_tr.rData) begin
+                if(ref_model[ram_tr.addr] === ram_tr.rData) begin
                     $display("PASS! Matched Data! ref_model: %h == rData: %h",
                      ref_model[ram_tr.addr], ram_tr.rData);
                 end else begin

@@ -23,6 +23,9 @@ delay 추가
 
 > AMBA APB datasheet을 확인해봐도 clk edge에서 바로 signal 을 change 하지 않음
 ![alt text]({63B3B78A-6F71-438C-9AD0-83CC103618F9}.png)
+clk posedge이후 약간의 delay후에 변화가 생긴다.
+raise condition을 방지하기 위함
+
 
 > 애초에 input output에 default delay 주기
 clocking block 이용
