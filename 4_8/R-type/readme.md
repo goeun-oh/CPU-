@@ -1,4 +1,4 @@
-*** R-type instruction 구현 ***
+** R-type instruction 구현 **
 
 ![alt text](RV32I-core.png)
 
