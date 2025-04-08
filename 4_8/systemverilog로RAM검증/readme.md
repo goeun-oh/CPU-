@@ -30,3 +30,6 @@ raise condition을 방지하기 위함
 > 애초에 input output에 default delay 주기
 clocking block 이용
 input, output이 나중에 나간다.
+
+> clocking block 적용이후
+![alt text]({80F5931A-E345-4C23-B425-CE0205E5171C}.png)
