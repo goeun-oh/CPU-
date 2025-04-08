@@ -12,6 +12,7 @@
 - 단점: 매우 느리다.
 </details>
 
+--- 
 
 **multi-cycle Architecture**
 
