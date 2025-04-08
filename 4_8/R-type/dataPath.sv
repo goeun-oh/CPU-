@@ -97,6 +97,12 @@ module RegisterFile(
 );
     logic [31:0] regFile[0:2**5-1]; //32 bit 짜리 공간이 32개 존재
 
+    initial begin
+        for (int i=0; i<32; i++) begin
+            regFile[i] =10 +i;
+        end
+    end
+
     always_ff@(posedge clk) begin
         if(we) regFile[wAddr] <= wData;
     end
