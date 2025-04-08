@@ -11,8 +11,11 @@
 - CPU 기본 모듈 (하버드 구조)
     ![alt text](image.png)
     - PC (program counter)
-    - instruction mem(ROM, FLASH)
+    - instruction mem(ROM, FLASH): read only memory
     - Register File
     - ALU
     - Data Mem (RAM)
-    
+
+
+** R-type instruction 구현 **
+
