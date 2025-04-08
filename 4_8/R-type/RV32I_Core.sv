@@ -5,7 +5,7 @@ module RV32I_Core(
     output logic [31:0] instrMemAddr
 );
     logic regFileWe;
-    logic [1:0] aluOP;
+    logic [3:0] aluOP;
 
     controlUnit CU(.*);
     dataPath DP(
