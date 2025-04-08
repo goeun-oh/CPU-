@@ -2,7 +2,7 @@ module mcu(
     input logic clk,
     input logic rst
 );
-    logic [31:0] instrCode, intrMemAddr;
+    logic [31:0] instrCode, instrMemAddr;
 
     RV32I_Core CORE(
         .clk(clk),
