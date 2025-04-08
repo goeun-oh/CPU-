@@ -1,6 +1,6 @@
 *** R-type instruction 구현 ***
 
-![alt text](RV32I_Core.png)
+![alt text](RV32I_core.png)
 core 밖에 메모리가 있음
 
 ![alt text](r_type_instrset.png)
