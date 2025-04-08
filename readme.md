@@ -2,8 +2,10 @@
 
 명령어 RV32I 이용
 
-- single-cycle Architecture
+**single-cycle Architecture**
+
 모든 명령어가 한 clk에서 끝난다.
+
 <details>
     <summary> 장단점</summary>    
 - 장점: 매우 simple
@@ -11,17 +13,21 @@
 </details>
 
 
-- multi-cycle Architecture
+**multi-cycle Architecture**
+
 명령어마다 동작 CLK 수가 다르다.
+
 <details>
     <summary> 장단점</summary>    
 - 장점: single-cycle architecture 보다 조금 빠르다.
 - 단점: single-cycle 보다 (조금) 복잡하다.
 </details>
 
-- pipeline (X) 
+**pipeline**
+
 고려해야할 사항이 많아서 진행하지 않을 예정
 개인적으로 구현
+
 <details>
     <summary> 장단점</summary>    
 - 장점: 매우 빠르다.
