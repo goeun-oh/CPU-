@@ -7,13 +7,19 @@ module DataPath (
     input  logic [31:0] instrCode,
     output logic [31:0] instrMemAddr,
     input  logic        regFileWe,
-    input  logic [ 3:0] aluControl
+    input  logic [ 3:0] aluControl,
+    input  logic        aluSrcMuxSel,
+    output logic [31:0] dataAddr,
+    output logic [31:0] datawData
 );
     logic [31:0] aluResult, RFData1, RFData2;
     logic [31:0] PCSrcData, PCOutData;
+    logic [31:0] immExt, aluSrcMuxOut;
 
     assign instrMemAddr = PCOutData;
-
+    assign dataAddr = aluResult;
+    assign datawData = RFData2;
+    
     RegisterFile U_RegFile (
         .clk(clk),
         .we(regFileWe),
@@ -25,11 +31,24 @@ module DataPath (
         .RData2(RFData2)
     );
 
+    mux1_2X1 ALUSrcMux(
+        .sel(aluSrcMuxSel),
+        .x0(RFData2),
+        .x1(immExt),
+        .y(aluSrcMuxOut)
+    );
+
     alu U_ALU (
         .aluControl(aluControl),
         .a(RFData1),
-        .b(RFData2),
+        .b(aluSrcMuxOut),
         .result(aluResult)
+    );
+
+    
+    extend ImmExtend(
+        .instrCode(instrCode),
+        .immExt(immExt)
     );
 
     register U_PC (
@@ -115,4 +134,33 @@ module RegisterFile (
 
     assign RData1 = (RAddr1 != 0) ? RegFile[RAddr1] : 32'b0;
     assign RData2 = (RAddr2 != 0) ? RegFile[RAddr2] : 32'b0;
+endmodule
+
+
+module mux1_2X1(
+    input logic sel,
+    input logic [31:0] x0,
+    input logic [31:0] x1,
+    output logic [31:0] y
+);
+
+    assign y=sel?x1:x0;
+endmodule
+
+module extend(
+    input logic [31:0] instrCode,
+    output logic [31:0] immExt
+);
+    wire [6:0] opcode =instrCode[6:0];
+
+    always_comb begin
+        immExt=32'bx;
+        case(opcode)
+            `OP_TYPE_R : immExt =32'bx;
+            `OP_TYPE_L : immExt ={{20{instrCode[31]}}, instrCode[31:20]};
+            `OP_TYPE_S : immExt ={{20{instrCode[31]}},instrCode[31:25], instrCode[11:7]};
+            default : immExt=32'bx;
+        endcase
+    end
+
 endmodule

@@ -18,3 +18,5 @@
     - ALU
     - Data Mem (RAM)
 
+- 점진적 확장
+    R -> S 
