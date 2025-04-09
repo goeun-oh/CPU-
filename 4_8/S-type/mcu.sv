@@ -15,9 +15,9 @@ module mcu (
     );
 
     ram DataMem (
-        .clk(clk),
-        .we(dataWe),
-        .addr(dataAddr),
+        .clk  (clk),
+        .we   (dataWe),
+        .addr (dataAddr),
         .wData(datawData),
         .rData(rData)
     );

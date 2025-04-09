@@ -16,27 +16,27 @@ module RV32I_Core (
     logic       wdataSel;
 
     ControlUnit CU (
-        .instrCode(instrCode),
-        .regFileWe(regFileWe),
-        .aluControl(aluControl),
+        .instrCode   (instrCode),
+        .regFileWe   (regFileWe),
+        .aluControl  (aluControl),
         .aluSrcMuxSel(aluSrcMuxSel),
-        .dataWe(dataWe),
-        .wdataSel(wdataSel)
+        .dataWe      (dataWe),
+        .wdataSel    (wdataSel)
     );
 
 
     DataPath DP (
-        .clk(clk),
-        .reset(reset),
-        .instrCode(instrCode),
+        .clk         (clk),
+        .reset       (reset),
+        .instrCode   (instrCode),
         .instrMemAddr(instrMemAddr),
-        .regFileWe(regFileWe),
-        .aluControl(aluControl),
+        .regFileWe   (regFileWe),
+        .aluControl  (aluControl),
         .aluSrcMuxSel(aluSrcMuxSel),
-        .wdataSel(wdataSel),
-        .rData(rData),
-        .dataAddr(dataAddr),
-        .datawData(datawData)
+        .wdataSel    (wdataSel),
+        .rData       (rData),
+        .dataAddr    (dataAddr),
+        .datawData   (datawData)
     );
 
 

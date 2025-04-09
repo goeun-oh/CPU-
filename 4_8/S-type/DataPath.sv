@@ -9,8 +9,8 @@ module DataPath (
     input  logic        regFileWe,
     input  logic [ 3:0] aluControl,
     input  logic        aluSrcMuxSel,
-    input logic wdataSel,
-    input logic [31:0] rData,
+    input  logic        wdataSel,
+    input  logic [31:0] rData,
     output logic [31:0] dataAddr,
     output logic [31:0] datawData
 );
@@ -22,50 +22,50 @@ module DataPath (
     assign instrMemAddr = PCOutData;
     assign dataAddr = aluResult;
     assign datawData = RFData2;
-    
+
     RegisterFile U_RegFile (
-        .clk(clk),
-        .we(regFileWe),
+        .clk   (clk),
+        .we    (regFileWe),
         .RAddr1(instrCode[19:15]),
         .RAddr2(instrCode[24:20]),
-        .WAddr(instrCode[11:7]),
-        .WData(wData),
+        .WAddr (instrCode[11:7]),
+        .WData (wData),
         .RData1(RFData1),
         .RData2(RFData2)
     );
 
-    mux1_2X1 ALUSrcMux(
+    mux1_2X1 ALUSrcMux (
         .sel(aluSrcMuxSel),
-        .x0(RFData2),
-        .x1(immExt),
-        .y(aluSrcMuxOut)
+        .x0 (RFData2),
+        .x1 (immExt),
+        .y  (aluSrcMuxOut)
     );
 
-    mux1_2X1 wdataMux(
+    mux1_2X1 wdataMux (
         .sel(wdataSel),
-        .x0(aluResult),
-        .x1(rData),
-        .y(wData)
+        .x0 (aluResult),
+        .x1 (rData),
+        .y  (wData)
     );
 
     alu U_ALU (
         .aluControl(aluControl),
-        .a(RFData1),
-        .b(aluSrcMuxOut),
-        .result(aluResult)
+        .a         (RFData1),
+        .b         (aluSrcMuxOut),
+        .result    (aluResult)
     );
 
-    
-    extend ImmExtend(
+
+    extend ImmExtend (
         .instrCode(instrCode),
-        .immExt(immExt)
+        .immExt   (immExt)
     );
 
     register U_PC (
-        .clk(clk),
+        .clk  (clk),
         .reset(reset),
-        .d(PCSrcData),
-        .q(PCOutData)
+        .d    (PCSrcData),
+        .q    (PCOutData)
     );
 
     adder U_PC_Adder (
@@ -92,10 +92,10 @@ module alu (
             `SRL:    result = a >> b;
             `SRA:    result = $signed(a) >>> b;
             `SLT:    result = $signed(a) < $signed(b);
-            `SLTU:   result = a <b;
-            `XOR:    result = a^b;
-            `OR:     result = a|b;
-            `AND:    result = a&b;
+            `SLTU:   result = a < b;
+            `XOR:    result = a ^ b;
+            `OR:     result = a | b;
+            `AND:    result = a & b;
             default: result = 32'bx;
         endcase
     end
@@ -133,7 +133,7 @@ module RegisterFile (
 );
     logic [31:0] RegFile[0:2**5-1];
     initial begin
-        for (int i=0; i<32; i++) begin
+        for (int i = 0; i < 32; i++) begin
             RegFile[i] = 10 + i;
         end
     end
@@ -147,29 +147,30 @@ module RegisterFile (
 endmodule
 
 
-module mux1_2X1(
-    input logic sel,
-    input logic [31:0] x0,
-    input logic [31:0] x1,
+module mux1_2X1 (
+    input  logic        sel,
+    input  logic [31:0] x0,
+    input  logic [31:0] x1,
     output logic [31:0] y
 );
 
-    assign y=sel?x1:x0;
+    assign y = sel ? x1 : x0;
 endmodule
 
-module extend(
-    input logic [31:0] instrCode,
+module extend (
+    input  logic [31:0] instrCode,
     output logic [31:0] immExt
 );
-    wire [6:0] opcode =instrCode[6:0];
+    wire [6:0] opcode = instrCode[6:0];
 
     always_comb begin
-        immExt=32'bx;
-        case(opcode)
-            `OP_TYPE_R : immExt =32'bx;
-            `OP_TYPE_L : immExt ={{20{instrCode[31]}}, instrCode[31:20]};
-            `OP_TYPE_S : immExt ={{20{instrCode[31]}},instrCode[31:25], instrCode[11:7]};
-            default : immExt=32'bx;
+        immExt = 32'bx;
+        case (opcode)
+            `OP_TYPE_R: immExt = 32'bx;
+            `OP_TYPE_L: immExt = {{20{instrCode[31]}}, instrCode[31:20]};
+            `OP_TYPE_S:
+            immExt = {{20{instrCode[31]}}, instrCode[31:25], instrCode[11:7]};
+            default: immExt = 32'bx;
         endcase
     end
 
