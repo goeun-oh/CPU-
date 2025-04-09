@@ -4,6 +4,7 @@ module RV32I_Core (
     input  logic        clk,
     input  logic        reset,
     input  logic [31:0] instrCode,
+    input  logic [31:0] rData,
     output logic        dataWe,
     output logic [31:0] instrMemAddr,
     output logic [31:0] dataAddr,
@@ -11,10 +12,32 @@ module RV32I_Core (
 );
     logic       regFileWe;
     logic [3:0] aluControl;
-    logic aluSrcMuxSel;
+    logic       aluSrcMuxSel;
+    logic       wdataSel;
 
-    ControlUnit U_ControlUnit (.*);
-    DataPath U_DataPath (.*);
+    ControlUnit CU (
+        .instrCode(instrCode),
+        .regFileWe(regFileWe),
+        .aluControl(aluControl),
+        .aluSrcMuxSel(aluSrcMuxSel),
+        .dataWe(dataWe),
+        .wdataSel(wdataSel)
+    );
+
+
+    DataPath DP (
+        .clk(clk),
+        .reset(reset),
+        .instrCode(instrCode),
+        .instrMemAddr(instrMemAddr),
+        .regFileWe(regFileWe),
+        .aluControl(aluControl),
+        .aluSrcMuxSel(aluSrcMuxSel),
+        .wdataSel(wdataSel),
+        .rData(rData),
+        .dataAddr(dataAddr),
+        .datawData(datawData)
+    );
 
 
 endmodule

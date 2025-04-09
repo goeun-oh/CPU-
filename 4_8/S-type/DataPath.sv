@@ -9,12 +9,15 @@ module DataPath (
     input  logic        regFileWe,
     input  logic [ 3:0] aluControl,
     input  logic        aluSrcMuxSel,
+    input logic wdataSel,
+    input logic [31:0] rData,
     output logic [31:0] dataAddr,
     output logic [31:0] datawData
 );
     logic [31:0] aluResult, RFData1, RFData2;
     logic [31:0] PCSrcData, PCOutData;
     logic [31:0] immExt, aluSrcMuxOut;
+    logic [31:0] wData;
 
     assign instrMemAddr = PCOutData;
     assign dataAddr = aluResult;
@@ -26,7 +29,7 @@ module DataPath (
         .RAddr1(instrCode[19:15]),
         .RAddr2(instrCode[24:20]),
         .WAddr(instrCode[11:7]),
-        .WData(aluResult),
+        .WData(wData),
         .RData1(RFData1),
         .RData2(RFData2)
     );
@@ -36,6 +39,13 @@ module DataPath (
         .x0(RFData2),
         .x1(immExt),
         .y(aluSrcMuxOut)
+    );
+
+    mux1_2X1 wdataMux(
+        .sel(wdataSel),
+        .x0(aluResult),
+        .x1(rData),
+        .y(wData)
     );
 
     alu U_ALU (

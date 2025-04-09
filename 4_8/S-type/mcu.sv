@@ -1,24 +1,25 @@
-module mcu(
+module mcu (
     input logic clk,
-    input logic rst
+    input logic reset
 );
     logic [31:0] instrCode, instrMemAddr;
     logic dataWe;
     logic [31:0] dataAddr, datawData;
+    logic [31:0] rData;
 
-    RV32I_Core CORE(.*);
+    RV32I_Core CORE (.*);
 
-    rom InstMem(
+    rom InstMem (
         .addr(instrMemAddr),
-        .rdata(instrCode)
+        .data(instrCode)
     );
 
-    ram DataMem(
+    ram DataMem (
         .clk(clk),
         .we(dataWe),
         .addr(dataAddr),
         .wData(datawData),
-        .rData()
+        .rData(rData)
     );
 
 endmodule

@@ -5,7 +5,7 @@ module tb_RV32I ();
     logic clk;
     logic reset;
 
-    MCU dut (.*);
+    mcu dut (.*);
 
     always #5 clk = ~clk;
 
