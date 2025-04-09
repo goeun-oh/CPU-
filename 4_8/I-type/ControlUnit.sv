@@ -11,9 +11,8 @@ module ControlUnit (
 );
     wire [6:0] opcode = instrCode[6:0];
     wire [3:0] operators = {instrCode[30], instrCode[14:12]};  // {func7[5], func3}
-
-
-    logic [3:0] signals;
+  
+    logic [4:0] signals;
     
     assign {regFileWe, aluSrcMuxSel, dataWe, wdataSel} = signals;
 
@@ -32,6 +31,13 @@ module ControlUnit (
             `OP_TYPE_R: aluControl = operators; //{func[5], func3}
             `OP_TYPE_S: aluControl = `ADD; 
             `OP_TYPE_L: aluControl = `ADD;
+            `OP_TYPE_I: begin
+                if (operators[2:0] == 3'b101) begin
+                    aluControl = operators;
+                end else begin
+                    aluControl ={1'b0, operators[2:0]};
+                end
+            end
         endcase
     end
 
