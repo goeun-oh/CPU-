@@ -10,10 +10,10 @@ module DataPath (
     input  logic [ 3:0] aluControl,
     input  logic        aluSrcMuxSel,
     input  logic        RFWDSrcMuxSel,
+    input  logic        branch,
     // instr memory side port
     output logic [31:0] instrMemAddr,
     input  logic [31:0] instrCode,
-    input  logic        branch,
     // data memory side port
     output logic [31:0] dataAddr,
     output logic [31:0] dataWData,
@@ -22,25 +22,21 @@ module DataPath (
     logic [31:0] aluResult, RFData1, RFData2;
     logic [31:0] PCSrcData, PCOutData;
     logic [31:0] immExt, aluSrcMuxOut, RFWDSrcMuxOut;
-    logic [31:0] PC4AdderResult, PCImmAdderResult;
-    logic [31:0] PCSrcMuxOut;
-    logic btaken;
-    
+    logic btaken, PCSrcMuxSel;
+    logic [31:0] PC_Imm_Adder_Result, PC_4_Adder_Result, PCSrcMuxOut;
+
     assign instrMemAddr = PCOutData;
     assign dataAddr     = aluResult;
     assign dataWData    = RFData2;
-
-    logic PCSrcMuxSel;
-
-    assign PCSrcMuxSel = btaken & branch;
+    assign PCSrcMuxSel  = btaken & branch;
 
     RegisterFile U_RegFile (
-        .clk   (clk),
-        .we    (regFileWe),
+        .clk(clk),
+        .we(regFileWe),
         .RAddr1(instrCode[19:15]),
         .RAddr2(instrCode[24:20]),
-        .WAddr (instrCode[11:7]),
-        .WData (RFWDSrcMuxOut),
+        .WAddr(instrCode[11:7]),
+        .WData(RFWDSrcMuxOut),
         .RData1(RFData1),
         .RData2(RFData2)
     );
@@ -61,15 +57,35 @@ module DataPath (
 
     alu U_ALU (
         .aluControl(aluControl),
-        .a         (RFData1),
-        .b         (aluSrcMuxOut),
-        .result    (aluResult),
-        .btaken    (braken)
+        .a(RFData1),
+        .b(aluSrcMuxOut),
+        .btaken(btaken),
+        .result(aluResult)
     );
 
     extend U_ImmExtend (
         .instrCode(instrCode),
-        .immExt   (immExt)
+        .immExt(immExt)
+    );
+
+    adder U_PC_Imm_Adder (
+        .a(immExt),
+        .b(PCOutData),
+        .y(PC_Imm_Adder_Result)
+    );
+
+    adder U_PC_4_Adder (
+        .a(32'd4),
+        .b(PCOutData),
+        .y(PC_4_Adder_Result)
+    );
+
+
+    mux_2x1 U_PCSrcMux (
+        .sel(PCSrcMuxSel),
+        .x0 (PC_4_Adder_Result),
+        .x1 (PC_Imm_Adder_Result),
+        .y  (PCSrcMuxOut)
     );
 
     register U_PC (
@@ -79,26 +95,6 @@ module DataPath (
         .q(PCOutData)
     );
 
-
-    adder U_PC_4_Adder (
-        .a(32'd4),
-        .b(PCOutData),
-        .y(PC4AdderResult)
-    );
-
-    adder U_PC_Imm_Adder (
-        .a(immExt),
-        .b(PCOutData),
-        .y(PCImmAdderResult)
-    );
-
-
-    mux_2x1 U_PCSrcMux (
-        .sel(PCSrcMuxSel),
-        .x0 (PC4AdderResult),
-        .x1 (PCImmAdderResult),
-        .y  (PCSrcMuxOut)
-    );
 endmodule
 
 
@@ -128,15 +124,16 @@ module alu (
     always_comb begin : branch_processor
         btaken = 1'b0;
         case (aluControl[2:0])
-            `BEQ:    btaken = (a == b);
-            `BNE:    btaken = (a != b);
-            `BLT:    btaken = ($signed(a) < $signed(b));
-            `BGE:    btaken = ($signed(a) >= $signed(b));
-            `BLTU:   btaken = (a < b);
-            `BGEU:   btaken = (a >= b);
+            `BEQ: btaken = (a == b);
+            `BNE: btaken = (a != b);
+            `BLT: btaken = ($signed(a) < $signed(b));
+            `BGE: btaken = ($signed(a) >= $signed(b));
+            `BLTU: btaken = (a < b);
+            `BGEU: btaken = (a >= b);
             default: btaken = 1'b0;
         endcase
     end
+
 endmodule
 
 module register (
@@ -223,7 +220,7 @@ module extend (
             end
             `OP_TYPE_B:
             immExt = {
-                {19{instrCode[31]}},
+                {20{instrCode[31]}},
                 instrCode[7],
                 instrCode[30:25],
                 instrCode[11:8],
@@ -233,3 +230,4 @@ module extend (
         endcase
     end
 endmodule
+
