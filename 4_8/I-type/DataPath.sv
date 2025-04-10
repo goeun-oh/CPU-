@@ -10,19 +10,22 @@ module DataPath (
     input  logic [ 3:0] aluControl,
     input  logic        aluSrcMuxSel,
     input  logic        wdataSel,
+    input  logic        PCAddrSrcMuxSel,
     input  logic [31:0] rData,
     output logic [31:0] dataAddr,
-    output logic [31:0] datawData
+    output logic [31:0] datawData,
+    output logic        compare
 );
     logic [31:0] aluResult, RFData1, RFData2;
     logic [31:0] PCSrcData, PCOutData;
     logic [31:0] immExt, aluSrcMuxOut;
     logic [31:0] wData;
+    logic [31:0] PCAddrSrcMuxOut;
 
     assign instrMemAddr = PCOutData;
     assign dataAddr = aluResult;
     assign datawData = RFData2;
-
+    assign compare = aluResult[0];
     RegisterFile U_RegFile (
         .clk   (clk),
         .we    (regFileWe),
@@ -69,11 +72,18 @@ module DataPath (
     );
 
     adder U_PC_Adder (
-        .a(32'd4),
+        .a(PCAddrSrcMuxOut),
         .b(PCOutData),
         .y(PCSrcData)
     );
 
+
+    mux1_2X1 PCAddrSrcMux (
+        .sel(PCAddrSrcMuxSel),
+        .x0 (32'd4),
+        .x1 (immExt),
+        .y  (PCAddrSrcMuxOut)
+    );
 
 endmodule
 
@@ -96,6 +106,7 @@ module alu (
             `XOR:    result = a ^ b;
             `OR:     result = a | b;
             `AND:    result = a & b;
+            `BEQ:    result = a == b;
             default: result = 32'bx;
         endcase
     end
@@ -162,6 +173,8 @@ module extend (
     output logic [31:0] immExt
 );
     wire [6:0] opcode = instrCode[6:0];
+    wire [2:0] func3 = instrCode[14:12];
+    wire [7:0] func7 = instrCode[31:25];
 
     always_comb begin
         immExt = 32'bx;
@@ -170,7 +183,19 @@ module extend (
             `OP_TYPE_L: immExt = {{20{instrCode[31]}}, instrCode[31:20]};
             `OP_TYPE_S:
             immExt = {{20{instrCode[31]}}, instrCode[31:25], instrCode[11:7]};
-            `OP_TYPE_I: immExt = {{26{1'b0}}, instrCode[24:20]};
+            `OP_TYPE_I: begin
+                case (func3)
+                    3'b001:  immExt = {27'b0, instrCode[24:20]};
+                    3'b101:  immExt = {27'b0, instrCode[24:20]};
+                    3'b011:  immExt = {20'b0, instrCode[31:20]};
+                    default: immExt = {{20{instrCode[31]}}, instrCode[31:20]};
+                endcase
+            end
+            `OP_TYPE_B: begin
+                if (func3[1:0] == 2'b11)
+                    immExt={{19{instrCode[31]}},instrCode[31], instrCode[7], instrCode[30:25], instrCode[11:8],1'b0};
+                else immExt= {19'b0,instrCode[31], instrCode[7], instrCode[30:25], instrCode[11:8],1'b0};
+            end
             default: immExt = 32'bx;
         endcase
     end
