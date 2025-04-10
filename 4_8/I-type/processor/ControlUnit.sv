@@ -8,24 +8,25 @@ module ControlUnit (
     output logic [ 3:0] aluControl,
     output logic        aluSrcMuxSel,
     output logic        dataWe,
-    output logic        RFWDSrcMuxSel
+    output logic        RFWDSrcMuxSel,
+    output logic branch
 );
     wire [6:0] opcode = instrCode[6:0];
     wire [3:0] operators = {
         instrCode[30], instrCode[14:12]
     };  // {func7[5], func3}
 
-    logic [3:0] signals;
+    logic [4:0] signals;
     assign {regFileWe, aluSrcMuxSel, dataWe, RFWDSrcMuxSel} = signals;
 
     always_comb begin
-        signals = 3'b0;
+        signals = 5'b0;
         case (opcode)
             // {regFileWe, aluSrcMuxSel, dataWe, RFWDSrcMuxSel} = signals
-            `OP_TYPE_R: signals = 4'b1_0_0_0;
-            `OP_TYPE_S: signals = 4'b0_1_1_0;
-            `OP_TYPE_L: signals = 4'b1_1_0_1;
-            `OP_TYPE_I: signals = 4'b1_1_0_0;
+            `OP_TYPE_R: signals = 5'b1_0_0_0_0;
+            `OP_TYPE_S: signals = 5'b0_1_1_0_0;
+            `OP_TYPE_L: signals = 5'b1_1_0_1_0;
+            `OP_TYPE_I: signals = 5'b1_1_0_0_1;
         endcase
     end
 
