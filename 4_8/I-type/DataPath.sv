@@ -23,9 +23,10 @@ module DataPath (
     logic [31:0] PCAddrSrcMuxOut;
 
     assign instrMemAddr = PCOutData;
-    assign dataAddr = aluResult;
-    assign datawData = RFData2;
-    assign compare = aluResult[0];
+    assign dataAddr     = aluResult;
+    assign datawData    = RFData2;
+    assign compare      = aluResult[0];
+    
     RegisterFile U_RegFile (
         .clk   (clk),
         .we    (regFileWe),
@@ -193,8 +194,23 @@ module extend (
             end
             `OP_TYPE_B: begin
                 if (func3[1:0] == 2'b11)
-                    immExt={{19{instrCode[31]}},instrCode[31], instrCode[7], instrCode[30:25], instrCode[11:8],1'b0};
-                else immExt= {19'b0,instrCode[31], instrCode[7], instrCode[30:25], instrCode[11:8],1'b0};
+                    immExt = {
+                        {19{instrCode[31]}},
+                        instrCode[31],
+                        instrCode[7],
+                        instrCode[30:25],
+                        instrCode[11:8],
+                        1'b0
+                    };
+                else
+                    immExt = {
+                        19'b0,
+                        instrCode[31],
+                        instrCode[7],
+                        instrCode[30:25],
+                        instrCode[11:8],
+                        1'b0
+                    };
             end
             default: immExt = 32'bx;
         endcase
