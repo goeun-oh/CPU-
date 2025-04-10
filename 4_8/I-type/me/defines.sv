@@ -16,3 +16,5 @@
 `define OP_TYPE_I 7'b0010011
 `define OP_TYPE_S 7'b0100011
 `define OP_TYPE_B 7'b1100011
+`define OP_TYPE_LU 7'b0110111
+`define OP_TYPE_AU 7'b0010111

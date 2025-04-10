@@ -20,17 +20,10 @@ module rom (
         //rom[x] = 32'b imm12_rs1_f3_rd_opcode //I-type : ADDI
         rom[4]  = 32'b000000001000_00010_000_00110_0010011;  //addi x6, x2, 8
 
-        //rom[x] = 32'b imm7_rs2_rs1_func3_imm5_opcode //I-type : BEQ
-        rom[5]= 32'b0000000_00000_00000_000_01100_1100011; //beq x0, x0, 12(8번 PC jump)
-
-        //rom[x] = 32'b imm7_rs2_rs1_func3_imm5_opcode //I-type : BNE
-
-        //rom[x] = 32'b imm7_rs2_rs1_func3_imm5_opcode //I-type : BLT
-
-
-        rom[8]= 32'b0000000_00000_00000_001_01100_1100011; //bne x0, x0, 12(다르면 8번 PC로 jump)
-        rom[9]= 32'b0000000_00011_00000_100_01000_1100011;//blt x0, x3, 8 (x0>x3 이면 9번 PC로 jump)
-
+        //lui
+        rom[5]=32'b00000000000000000001_01011_0110111; //lui x11, 0x1 (x11 <<12 = 0x00001000)
+        //auipc
+        rom[6]=32'b00000000000000000001_01100_0010111; //auipc x12, 0x1 (x12 <<12 = 0x00001000)
 
     end
     assign data = rom[addr[31:2]];

@@ -16,6 +16,8 @@ module RV32I_Core (
     logic       wdataSel;
     logic       compare;
     logic       PCAddrSrcMuxSel;
+    logic       alurd1MuxSel;
+    logic       lui;
 
     ControlUnit CU (
         .instrCode      (instrCode),
@@ -25,7 +27,9 @@ module RV32I_Core (
         .dataWe         (dataWe),
         .wdataSel       (wdataSel),
         .compare        (compare),
-        .PCAddrSrcMuxSel(PCAddrSrcMuxSel)
+        .PCAddrSrcMuxSel(PCAddrSrcMuxSel),
+        .lui            (lui),
+        .alurd1MuxSel   (alurd1MuxSel)
     );
 
 
@@ -42,7 +46,9 @@ module RV32I_Core (
         .dataAddr       (dataAddr),
         .datawData      (datawData),
         .compare        (compare),
-        .PCAddrSrcMuxSel(PCAddrSrcMuxSel)
+        .PCAddrSrcMuxSel(PCAddrSrcMuxSel),
+        .lui            (lui),
+        .alurd1MuxSel   (alurd1MuxSel)
     );
 
 

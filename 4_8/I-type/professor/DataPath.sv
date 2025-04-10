@@ -1,96 +1,94 @@
 `timescale 1ns / 1ps
+
 `include "defines.sv"
 
 module DataPath (
     input  logic        clk,
     input  logic        reset,
-    input  logic [31:0] instrCode,
-    output logic [31:0] instrMemAddr,
+    // control unit side port
     input  logic        regFileWe,
-    input  logic [ 3:0] aluControl,
+    input  logic [ 4:0] aluControl,
     input  logic        aluSrcMuxSel,
-    input  logic        wdataSel,
-    input  logic        PCAddrSrcMuxSel,
-    input  logic [31:0] rData,
+    input  logic        branch,
+    input  logic        RFWDSrcMuxSel,
+    // instr memory side port
+    output logic [31:0] instrMemAddr,
+    input  logic [31:0] instrCode,
+    // data memory side port
     output logic [31:0] dataAddr,
-    output logic [31:0] datawData,
-    output logic        compare
+    output logic [31:0] dataWData,
+    input  logic [31:0] dataRData
 );
     logic [31:0] aluResult, RFData1, RFData2;
     logic [31:0] PCSrcData, PCOutData;
-    logic [31:0] immExt, aluSrcMuxOut;
-    logic [31:0] wData;
-    logic [31:0] PCAddrSrcMuxOut;
+    logic [31:0] immExt, aluSrcMuxOut, RFWDSrcMuxOut, PCSrcMuxOut ;
 
     assign instrMemAddr = PCOutData;
     assign dataAddr     = aluResult;
-    assign datawData    = RFData2;
-    assign compare      = aluResult[0];
-    
+    assign dataWData    = RFData2;
+
     RegisterFile U_RegFile (
-        .clk   (clk),
-        .we    (regFileWe),
+        .clk(clk),
+        .we(regFileWe),
         .RAddr1(instrCode[19:15]),
         .RAddr2(instrCode[24:20]),
-        .WAddr (instrCode[11:7]),
-        .WData (wData),
+        .WAddr(instrCode[11:7]),
+        .WData(RFWDSrcMuxOut),
         .RData1(RFData1),
         .RData2(RFData2)
     );
 
-    mux1_2X1 ALUSrcMux (
+    mux_2x1 U_ALUSrcMux (
         .sel(aluSrcMuxSel),
         .x0 (RFData2),
         .x1 (immExt),
         .y  (aluSrcMuxOut)
     );
 
-    mux1_2X1 wdataMux (
-        .sel(wdataSel),
+    mux_2x1 U_RFWDSrcMux (
+        .sel(RFWDSrcMuxSel),
         .x0 (aluResult),
-        .x1 (rData),
-        .y  (wData)
+        .x1 (dataRData),
+        .y  (RFWDSrcMuxOut)
     );
 
     alu U_ALU (
         .aluControl(aluControl),
-        .a         (RFData1),
-        .b         (aluSrcMuxOut),
-        .result    (aluResult)
+        .a(RFData1),
+        .b(aluSrcMuxOut),
+        .result(aluResult)
     );
 
-
-    extend ImmExtend (
+    mux_2x1 U_PCSrcMux (
+        .sel(branch&aluResult),
+        .x0(32'd4),
+        .x1(immExt),
+        .y(PCSrcMuxOut)
+    );
+    extend U_ImmExtend (
         .instrCode(instrCode),
-        .immExt   (immExt)
+        .immExt(immExt)
     );
 
     register U_PC (
-        .clk  (clk),
+        .clk(clk),
         .reset(reset),
-        .d    (PCSrcData),
-        .q    (PCOutData)
+        .d(PCSrcData),
+        .q(PCOutData)
     );
 
     adder U_PC_Adder (
-        .a(PCAddrSrcMuxOut),
+        .a(PCSrcMuxOut),
         .b(PCOutData),
         .y(PCSrcData)
     );
 
 
-    mux1_2X1 PCAddrSrcMux (
-        .sel(PCAddrSrcMuxSel),
-        .x0 (32'd4),
-        .x1 (immExt),
-        .y  (PCAddrSrcMuxOut)
-    );
-
 endmodule
 
 
 module alu (
-    input  logic [ 3:0] aluControl,
+    input  logic [ 4:0] aluControl,
     input  logic [31:0] a,
     input  logic [31:0] b,
     output logic [31:0] result
@@ -101,13 +99,18 @@ module alu (
             `SUB:    result = a - b;
             `SLL:    result = a << b;
             `SRL:    result = a >> b;
-            `SRA:    result = $signed(a) >>> b;
-            `SLT:    result = $signed(a) < $signed(b);
-            `SLTU:   result = a < b;
+            `SRA:    result = $signed(a) >>> b[4:0];
+            `SLT:    result = ($signed(a) < $signed(b)) ? 1 : 0;
+            `SLTU:   result = (a < b) ? 1 : 0;
             `XOR:    result = a ^ b;
             `OR:     result = a | b;
             `AND:    result = a & b;
-            `BEQ:    result = a == b;
+            `BEQ:    result = ($signed(a) == $signed(b)) ? 1 : 0;
+            `BNE:    result = ($signed(a) != $signed(b)) ? 1 : 0;
+            `BLT:    result = ($signed(a) < $signed(b)) ? 1 : 0;
+            `BGE:    result = ($signed(a) >= $signed(b)) ? 1 : 0;
+            `BLTU:   result = (a < b) ? 1 : 0;
+            `BGEU:   result = (a >= b) ? 1 : 0;
             default: result = 32'bx;
         endcase
     end
@@ -158,15 +161,19 @@ module RegisterFile (
     assign RData2 = (RAddr2 != 0) ? RegFile[RAddr2] : 32'b0;
 endmodule
 
-
-module mux1_2X1 (
+module mux_2x1 (
     input  logic        sel,
     input  logic [31:0] x0,
     input  logic [31:0] x1,
     output logic [31:0] y
 );
-
-    assign y = sel ? x1 : x0;
+    always_comb begin
+        case (sel)
+            1'b0:    y = x0;
+            1'b1:    y = x1;
+            default: y = 32'bx;
+        endcase
+    end
 endmodule
 
 module extend (
@@ -175,7 +182,6 @@ module extend (
 );
     wire [6:0] opcode = instrCode[6:0];
     wire [2:0] func3 = instrCode[14:12];
-    wire [7:0] func7 = instrCode[31:25];
 
     always_comb begin
         immExt = 32'bx;
@@ -186,34 +192,16 @@ module extend (
             immExt = {{20{instrCode[31]}}, instrCode[31:25], instrCode[11:7]};
             `OP_TYPE_I: begin
                 case (func3)
-                    3'b001:  immExt = {27'b0, instrCode[24:20]};
-                    3'b101:  immExt = {27'b0, instrCode[24:20]};
-                    3'b011:  immExt = {20'b0, instrCode[31:20]};
-                    default: immExt = {{20{instrCode[31]}}, instrCode[31:20]};
+                    3'b001: immExt = {27'b0, instrCode[24:20]};
+                    3'b101: immExt = {27'b0, instrCode[24:20]};
+                    3'b011: immExt = {20'b0, instrCode[31:20]};
+                    default: immExt = {{20{instrCode[31]}}, instrCode[31:20]}; 
                 endcase
-            end
-            `OP_TYPE_B: begin
-                if (func3[1:0] == 2'b11)
-                    immExt = {
-                        {19{instrCode[31]}},
-                        instrCode[31],
-                        instrCode[7],
-                        instrCode[30:25],
-                        instrCode[11:8],
-                        1'b0
-                    };
-                else
-                    immExt = {
-                        19'b0,
-                        instrCode[31],
-                        instrCode[7],
-                        instrCode[30:25],
-                        instrCode[11:8],
-                        1'b0
-                    };
-            end
+            end 
+            `OP_TYPE_B: immExt = {{19{instrCode[31]}}, instrCode[31],
+                                    instrCode[7], instrCode[30:25],
+                                    instrCode[11:8], 1'b0};
             default: immExt = 32'bx;
         endcase
     end
-
 endmodule
