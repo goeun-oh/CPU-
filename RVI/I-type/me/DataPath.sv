@@ -9,20 +9,22 @@ module DataPath (
     input  logic        regFileWe,
     input  logic [ 3:0] aluControl,
     input  logic        aluSrcMuxSel,
-    input  logic        wdataSel,
+    input  logic [ 1:0] wdataSel,
     input  logic        PCAddrSrcMuxSel,
-    input  logic        lui,
     input  logic        alurd1MuxSel,
     input  logic [31:0] rData,
     output logic [31:0] dataAddr,
     output logic [31:0] datawData,
-    output logic        compare
+    output logic        compare,
+    input  logic        PCSrcMuxSel
 );
     logic [31:0] aluResult, RFData1, RFData2;
     logic [31:0] PCSrcData, PCOutData;
     logic [31:0] immExt, aluSrcMuxOut;
     logic [31:0] wData;
     logic [31:0] PCAddrSrcMuxOut, alurd1MuxOut;
+    logic [31:0] PCAddr0MuxOut, PCAddr1MuxOut;
+    logic [31:0] PCSrcMuxOut;
 
     assign instrMemAddr = PCOutData;
     assign dataAddr     = aluResult;
@@ -47,11 +49,12 @@ module DataPath (
         .y  (aluSrcMuxOut)
     );
 
-    mux1_3X1 wdataMux (
-        .sel({lui, wdataSel}),
+    mux1_4X1 wdataMux (
+        .sel(wdataSel),
         .x0 (aluResult),
         .x1 (rData),
         .x2 (immExt),
+        .x3 (PCAddr0MuxOut),
         .y  (wData)
     );
 
@@ -82,27 +85,41 @@ module DataPath (
         .q    (PCOutData)
     );
 
-    adder U_PC_Adder (
-        .a(PCAddrSrcMuxOut),
+    adder U_PC_Adder0 (
+        .a(32'd4),
         .b(PCOutData),
-        .y(PCSrcData)
+        .y(PCAddr0MuxOut)
+    );
+
+    adder U_PC_Adder1 (
+        .a(PCSrcMuxOut),
+        .b(PCOutData),
+        .y(PCAddr1MuxOut)
     );
 
 
+    mux1_2X1 PCSrcMux (
+        .sel(PCSrcMuxSel),
+        .x0 (aluResult),
+        .x1 (immExt),
+        .y  (PCSrcMuxOut)
+    );
+
     mux1_2X1 PCAddrSrcMux (
         .sel(PCAddrSrcMuxSel),
-        .x0 (32'd4),
-        .x1 (immExt),
-        .y  (PCAddrSrcMuxOut)
+        .x0 (PCAddr0MuxOut),
+        .x1 (PCAddr1MuxOut),
+        .y  (PCSrcData)
     );
 
 endmodule
 
-module mux1_3X1 (
+module mux1_4X1 (
     input  logic [ 1:0] sel,
     input  logic [31:0] x0,
     input  logic [31:0] x1,
     input  logic [31:0] x2,
+    input  logic [31:0] x3,
     output logic [31:0] y
 );
     always_comb begin
@@ -110,6 +127,7 @@ module mux1_3X1 (
             2'b00:   y = x0;
             2'b01:   y = x1;
             2'b10:   y = x2;
+            2'b11:   y = x3;
             default: y = 32'bx;
         endcase
     end
@@ -240,6 +258,15 @@ module extend (
             end
             `OP_TYPE_LU: immExt = {instrCode[31:12], 12'b0};
             `OP_TYPE_AU: immExt = {instrCode[31:12], 12'b0};
+            `OP_TYPE_JAL: immExt = 
+                {11'b0,
+                instrCode[31],
+                instrCode[19:12],
+                instrCode[20],
+                instrCode[30:21],
+                1'b0
+            };
+            `OP_TYPE_JALR: immExt = {20'b0, instrCode[31:20]};
             default: immExt = 32'bx;
         endcase
     end

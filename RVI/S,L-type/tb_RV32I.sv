@@ -12,5 +12,7 @@ module tb_RV32I ();
     initial begin
         clk = 0; reset = 1;
         #10 reset = 0;
+        #40;
+        $finish;
     end
 endmodule
