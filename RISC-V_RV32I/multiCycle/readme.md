@@ -41,11 +41,28 @@ ff 자체의 dealy가 있기 때문에 L-type의 경우 single cycle보다 더 �
 ![](img.png)
 </details>
 
+---
 
 <details>
 <summary> stage 별 ff 배치를 위해 기존 single cycle 회로 분석 </summary>
 
-![](img2.png)
+![](img3.png)
+multi-cycle에 맞춰 회로를 재배치하자
+<details>
+<summary> 회로 재구성 </summary>
+![](img3.png)
+수정된 회로 + 각 단계에 register 추가
+
+**PC**
+- PC는 이미 flip-flop이므로 추가할 필요 없음 -> but enable 신호 추가가 필요하다
+- 이유: 한 명령어가 다 끝나기 전에 다른 명령어가 fetch 되서는 안된다.
+- CU에 PCEn 신호가 추가되어야 한다
+
+> FSM이 필요하다!
+FSM은 CU에 구성하자
+
+
+</details>
 
 </details>
 
