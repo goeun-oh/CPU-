@@ -13,7 +13,6 @@ module DataPath (
     input  logic        branch,
     input  logic        jal,
     input  logic        jalr,
-    input  logic        pcEn,
     // instr memory side port
     output logic [31:0] instrMemAddr,
     input  logic [31:0] instrCode,
@@ -27,24 +26,12 @@ module DataPath (
     logic [31:0] immExt, aluSrcMuxOut, RFWDSrcMuxOut;
     logic btaken, PCSrcMuxSel;
     logic [31:0] PC_Imm_AdderResult, PC_4_AdderResult, PCSrcMuxOut;
-    logic [31:0] w_RFData1, w_RFData2, w_immExt, w_aluResult, w_PCSrcMuxOut, w_dataRData, i_wData;
 
     assign instrMemAddr = PCOutData;
     assign dataAddr     = aluResult;
-    assign dataWData    = i_wData;
+    assign dataWData    = RFData2;
     assign PCSrcMuxSel  = jal | (btaken & branch);
 
-
-    ///////Fetch////////
-    registerWithEnable U_PC (
-        .clk(clk),
-        .reset(reset),
-        .en(pcEn),
-        .d(w_PCSrcMuxOut),
-        .q(PCOutData)
-    );
-
-    ////////////Decode/////////////
     RegisterFile U_RegFile (
         .clk(clk),
         .we(regFileWe),
@@ -56,75 +43,35 @@ module DataPath (
         .RData2(RFData2)
     );
 
-    extend U_ImmExtend (
-        .instrCode(instrCode),
-        .immExt(immExt)
-    );
-
-    register RD1toAlu(
-        .clk(clk),
-        .reset(reset),
-        .d(RFData1),
-        .q(w_RFData1)
-    );
-
-    register RD2toAlu(
-        .clk(clk),
-        .reset(reset),
-        .d(RFData2),
-        .q(w_RFData2)
-    );
-
-    register ImmtoAlu(
-        .clk(clk),
-        .reset(reset),
-        .d(immExt),
-        .q(w_immExt)
-    );
-
-    //////////EXE///////////
-    
     mux_2x1 U_ALUSrcMux (
         .sel(aluSrcMuxSel),
-        .x0 (w_RFData2),
-        .x1 (w_immExt),
+        .x0 (RFData2),
+        .x1 (immExt),
         .y  (aluSrcMuxOut)
     );
-
-    alu U_ALU (
-        .aluControl(aluControl),
-        .a(w_RFData1),
-        .b(aluSrcMuxOut),
-        .btaken(btaken),
-        .result(aluResult)
-    );
-
-    register AlutoMem(
-        .clk(clk),
-        .reset(reset),
-        .d(aluResult),
-        .q(w_aluResult)
-    );
-
-    register EXEtoMem(
-        .clk(clk),
-        .reset(reset),
-        .d(w_RFData2),
-        .q(i_wData)
-    );
-
 
     mux_5x1 U_RFWDSrcMux (
         .sel(RFWDSrcMuxSel),
         .x0 (aluResult),
-        .x1 (w_dataRData), ////
-        .x2 (w_immExt),
+        .x1 (dataRData),
+        .x2 (immExt),
         .x3 (PC_Imm_AdderResult),
         .x4 (PC_4_AdderResult),
         .y  (RFWDSrcMuxOut)
     );
 
+    alu U_ALU (
+        .aluControl(aluControl),
+        .a(RFData1),
+        .b(aluSrcMuxOut),
+        .btaken(btaken),
+        .result(aluResult)
+    );
 
+    extend U_ImmExtend (
+        .instrCode(instrCode),
+        .immExt(immExt)
+    );
 
     mux_2x1 U_PC_Imm_Adder_SrcMux (
         .sel(jalr),
@@ -153,19 +100,11 @@ module DataPath (
         .y  (PCSrcMuxOut)
     );
 
-    register PCSrcMuxtoPC(
+    register U_PC (
         .clk(clk),
         .reset(reset),
         .d(PCSrcMuxOut),
-        .q(w_PCSrcMuxOut)
-    );
-
-    ////////MEM/////////
-    register MemtoReg(
-        .clk(clk),
-        .reset(reset),
-        .d(dataRData),
-        .q(w_dataRData)
+        .q(PCOutData)
     );
 
 
@@ -206,22 +145,6 @@ module alu (
             `BGEU:   btaken = (a >= b);
             default: btaken = 1'b0;
         endcase
-    end
-endmodule
-
-module registerWithEnable (
-    input  logic        clk,
-    input  logic        reset,
-    input  logic        en,
-    input  logic [31:0] d,
-    output logic [31:0] q
-);
-
-    always_ff @(posedge clk, posedge reset) begin
-        if (reset) q <= 0;
-        else begin
-            if (en) q <= d;
-        end
     end
 endmodule
 
