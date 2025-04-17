@@ -1,6 +1,6 @@
 - single cycle의 한계
 <details>
-<summary> 가장 긴 cycle은 SW/LW(L-type)<</summary>
+<summary> 가장 긴 cycle은 L-type<</summary>
 
 PC-> ROM으로 addr 전송
 ROM이 instruction을 regfile과 cu에 전달
@@ -48,6 +48,10 @@ ff 자체의 dealy가 있기 때문에 L-type의 경우 single cycle보다 더 �
 
 ![](img3.png)
 multi-cycle에 맞춰 회로를 재배치하자
+
+
+</details>
+
 <details>
 <summary> 회로 재구성 </summary>
 ![](img3.png)
@@ -64,5 +68,5 @@ FSM은 CU에 구성하자
 
 </details>
 
-</details>
-
+FSM
+![](FSM.png)
