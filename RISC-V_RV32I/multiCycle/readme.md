@@ -24,7 +24,7 @@ clk을 5로 나눈다
 2. Decode: 명령어 해독(분석) (Controlunit signal 생성)
 3. Execute: ALU 연산
 4. MemAccess: 메모리(RAM) 접근
-5. WriteBack: 결과 레지스터에 기록
+5. WriteBack: 결과 레지스터에 기록 (RAM -> 레지스터로 Read data 이동)
 </details>
 
 <details>
