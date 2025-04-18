@@ -41,6 +41,8 @@ module APB_Master (
     assign PSEL2 = pselx[2];
     assign PSEL3 = pselx[3];
 
+
+
     typedef enum bit [1:0] {
         IDLE,
         SETUP,
@@ -68,9 +70,14 @@ module APB_Master (
         temp_addr_next  = temp_addr_reg;
         temp_wdata_next = temp_wdata_reg;
         temp_write_next = temp_write_reg;
+        PADDR = temp_addr_reg;
+        PWDATA = temp_wdata_reg;
+        PWRITE = 1'b0;
+        PENABLE = 1'b0;
+        decoder_en=1'b0;
+
         case (state)
             IDLE: begin
-                decoder_en = 1'b0;
                 if (transfer) begin
                     state_next = SETUP;
                     temp_addr_next = addr; //latching (임시 저장소에 저장)
@@ -80,27 +87,20 @@ module APB_Master (
             end
             SETUP: begin
                 decoder_en = 1'b1;
-                PADDR      = temp_addr_reg;
-                PENABLE    = 1'b0;
-                //                PSEL1   = 1'b1; -> decoder에서 선택돼서 출력이 나가야함
+                PADDR = temp_addr_reg;
                 if (temp_write_reg) begin
                     PWRITE = 1'b1;
                     PWDATA = temp_wdata_reg;
-                end else begin
-                    PWRITE = 1'b0;
                 end
                 state_next = ACCESS;
             end
             ACCESS: begin
-                decoder_en = 1'b1;
                 PADDR = temp_addr_reg;
+                decoder_en = 1'b1;
                 PENABLE = 1'b1;
-                PSEL1 = 1'b1;
                 if (temp_write_reg) begin
                     PWRITE = 1'b1;
                     PWDATA = temp_wdata_reg;
-                end else begin
-                    PWRITE = 1'b0;
                 end
 
                 if (PREADY1) begin
