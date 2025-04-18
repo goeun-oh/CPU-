@@ -9,9 +9,18 @@ module APB_Master (
     output logic [31:0] PWDATA,
     output logic        PENABLE,
     output logic        PWRITE,
-    output logic        PSEL1,     //우선 1개의 peri만 있다 가정
-    input  logic [31:0] PRDATA1,   //우선 1개의 peri만 있다 가정
-    input  logic        PREADY1,   //우선 1개의 peri만 있다 가정
+    output logic        PSEL0,
+    output logic        PSEL1,
+    output logic        PSEL2,
+    output logic        PSEL3,
+    input  logic [31:0] PRDATA0,
+    input  logic [31:0] PRDATA1,
+    input  logic [31:0] PRDATA2,
+    input  logic [31:0] PRDATA3,
+    input  logic        PREADY0,
+    input  logic        PREADY1,
+    input  logic        PREADY2,
+    input  logic        PREADY3,
     // Internal Interface Signals
     input  logic        transfer,
     // trigger(방아쇠, 시스템을 동작하게 만드는 최초 신호) sig cpu to bus
@@ -24,6 +33,13 @@ module APB_Master (
     logic [31:0] temp_addr_reg, temp_addr_next;
     logic [31:0] temp_wdata_reg, temp_wdata_next;
     logic temp_write_reg, temp_write_next;
+    logic decoder_en;
+    logic [3:0] pselx;
+
+    assign PSEL0 = pselx[0];
+    assign PSEL1 = pselx[1];
+    assign PSEL2 = pselx[2];
+    assign PSEL3 = pselx[3];
 
     typedef enum bit [1:0] {
         IDLE,
@@ -54,7 +70,7 @@ module APB_Master (
         temp_write_next = temp_write_reg;
         case (state)
             IDLE: begin
-                PSEL1 = 1'b0;
+                decoder_en = 1'b0;
                 if (transfer) begin
                     state_next = SETUP;
                     temp_addr_next = addr; //latching (임시 저장소에 저장)
@@ -63,9 +79,10 @@ module APB_Master (
                 end
             end
             SETUP: begin
-                PADDR   = temp_addr_reg;
+                decoder_en = 1'b1;
+                PADDR = temp_addr_reg;
                 PENABLE = 1'b0;
-                PSEL1   = 1'b1;
+                //                PSEL1   = 1'b1; -> decoder에서 선택돼서 출력이 나가야함
                 if (temp_write_reg) begin
                     PWRITE = 1'b1;
                     PWDATA = temp_wdata_reg;
@@ -75,9 +92,10 @@ module APB_Master (
                 state_next = ACCESS;
             end
             ACCESS: begin
-                PADDR   = temp_addr_reg;
+                decoder_en = 1'b1;
+                PADDR = temp_addr_reg;
                 PENABLE = 1'b1;
-                PSEL1   = 1'b1;
+                PSEL1 = 1'b1;
                 if (temp_write_reg) begin
                     PWRITE = 1'b1;
                     PWDATA = temp_wdata_reg;
@@ -85,13 +103,79 @@ module APB_Master (
                     PWRITE = 1'b0;
                 end
 
-                if (PREADY1) state_next = IDLE;
+                if (PREADY1) begin
+                    state_next = IDLE;
+                    rdata      = PRDATA1;
+                end
             end
         endcase
     end
+
+    APB_Decoder U_APB_Decoder (
+        .en (decoder_en),
+        .sel(temp_addr_reg),
+        .y  (pselx)
+    );
+
 
 
 
 endmodule
 
+//Decoder에 enable 신호가 필요하다!
+module APB_Decoder (
+    input  logic        en,
+    input  logic [31:0] sel,
+    output logic [ 3:0] y
+);
 
+    always_comb begin
+        y = 4'b0000;
+        if (en) begin
+            casex (sel)
+                32'h1000_0xxx: y = 4'b0001;
+                32'h1000_1xxx: y = 4'b0010;
+                32'h1000_2xxx: y = 4'b0100;
+                32'h1000_3xxx: y = 4'b1000;
+            endcase
+        end
+    end
+
+endmodule
+
+
+module APB_Mux (
+    input  logic [31:0] sel,
+    input  logic [31:0] d0,
+    input  logic [31:0] d1,
+    input  logic [31:0] d2,
+    input  logic [31:0] d3,
+    input  logic        r0,
+    input  logic        r1,
+    input  logic        r2,
+    input  logic        r3,
+    output logic [31:0] rdata,
+    output logic        ready
+);
+    always_comb begin
+        rdata = 32'bx;
+        casex (sel)
+            32'h1000_0xxx: rdata = d0;
+            32'h1000_1xxx: rdata = d1;
+            32'h1000_2xxx: rdata = d2;
+            32'h1000_3xxx: rdata = d3;
+        endcase
+    end
+
+    always_comb begin
+        ready = 1'bx;
+        casex (sel)
+            32'h1000_0xxx: ready = r0;
+            32'h1000_1xxx: ready = r1;
+            32'h1000_2xxx: ready = r2;
+            32'h1000_3xxx: ready = r3;
+        endcase
+    end
+
+
+endmodule
