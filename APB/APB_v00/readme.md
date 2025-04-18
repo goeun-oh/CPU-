@@ -48,3 +48,9 @@ APB 내부적으로는 chip enable이 high일때만 동작한다.
 ### APB_Mux
 select된 Slave의 Rdata와 ready 신호를 동시에  Master에 전달한다.
 ready가 1일때 cpu가 해당 rdata를 읽는다
+
+
+### APB Slave (peripheral)
+![](ApbSlaveModel.png)
+peripheral에 Register Map memory가 있다 (0x00~0x0c) -> 따라서 paddr은 4bit(0~15)로 설정
+
