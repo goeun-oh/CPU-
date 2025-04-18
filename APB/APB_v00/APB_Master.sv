@@ -103,7 +103,7 @@ module APB_Master (
                     PWDATA = temp_wdata_reg;
                 end
 
-                if (PREADY1) begin
+                if (ready) begin
                     state_next = IDLE;
                 end
             end
