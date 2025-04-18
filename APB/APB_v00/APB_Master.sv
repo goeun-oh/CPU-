@@ -51,13 +51,13 @@ module APB_Master (
 
     always_ff @(posedge PCLK, posedge PRESET) begin
         if (PRESET) begin
-            state <= IDLE;
-            temp_addr_reg <= 0;
+            state          <= IDLE;
+            temp_addr_reg  <= 0;
             temp_wdata_reg <= 0;
             temp_write_reg <= 0;
         end else begin
-            state <= state_next;
-            temp_addr_reg <= temp_addr_next;
+            state          <= state_next;
+            temp_addr_reg  <= temp_addr_next;
             temp_wdata_reg <= temp_wdata_next;
             temp_write_reg <= temp_write_next;
         end
@@ -80,8 +80,8 @@ module APB_Master (
             end
             SETUP: begin
                 decoder_en = 1'b1;
-                PADDR = temp_addr_reg;
-                PENABLE = 1'b0;
+                PADDR      = temp_addr_reg;
+                PENABLE    = 1'b0;
                 //                PSEL1   = 1'b1; -> decoder에서 선택돼서 출력이 나가야함
                 if (temp_write_reg) begin
                     PWRITE = 1'b1;
@@ -105,7 +105,6 @@ module APB_Master (
 
                 if (PREADY1) begin
                     state_next = IDLE;
-                    rdata      = PRDATA1;
                 end
             end
         endcase
@@ -118,7 +117,19 @@ module APB_Master (
     );
 
 
-
+    APB_Mux U_APB_Mux (
+        .sel  (temp_addr_reg),
+        .d0   (PRDATA0),
+        .d1   (PRDATA1),
+        .d2   (PRDATA2),
+        .d3   (PRDATA3),
+        .r0   (PREADY0),
+        .r1   (PREADY1),
+        .r2   (PREADY2),
+        .r3   (PREADY3),
+        .rdata(rdata),
+        .ready(ready)
+    );
 
 endmodule
 
