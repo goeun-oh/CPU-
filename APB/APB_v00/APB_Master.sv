@@ -70,11 +70,11 @@ module APB_Master (
         temp_addr_next  = temp_addr_reg;
         temp_wdata_next = temp_wdata_reg;
         temp_write_next = temp_write_reg;
-        PADDR = temp_addr_reg;
-        PWDATA = temp_wdata_reg;
-        PWRITE = 1'b0;
-        PENABLE = 1'b0;
-        decoder_en=1'b0;
+        PADDR           = temp_addr_reg;
+        PWDATA          = temp_wdata_reg;
+        PWRITE          = 1'b0;
+        PENABLE         = 1'b0;
+        decoder_en      = 1'b0;
 
         case (state)
             IDLE: begin
