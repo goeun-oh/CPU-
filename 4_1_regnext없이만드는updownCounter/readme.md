@@ -1,2 +1,0 @@
-- cotroll unit(data를 control 하는 부분)부분 따로, datapth(실제 data가 가는 쪽) 부분 따로 설계
-- reg, next 없이 latch 안만드는 설계 방법
