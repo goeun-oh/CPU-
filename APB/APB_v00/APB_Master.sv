@@ -87,7 +87,7 @@ module APB_Master (
             end
             SETUP: begin
                 decoder_en = 1'b1;
-                PADDR = temp_addr_reg;
+                PADDR      = temp_addr_reg;
                 if (temp_write_reg) begin
                     PWRITE = 1'b1;
                     PWDATA = temp_wdata_reg;
@@ -95,9 +95,9 @@ module APB_Master (
                 state_next = ACCESS;
             end
             ACCESS: begin
-                PADDR = temp_addr_reg;
+                PADDR      = temp_addr_reg;
                 decoder_en = 1'b1;
-                PENABLE = 1'b1;
+                PENABLE    = 1'b1;
                 if (temp_write_reg) begin
                     PWRITE = 1'b1;
                     PWDATA = temp_wdata_reg;
