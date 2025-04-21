@@ -81,6 +81,7 @@ void delay(int n)
     }
 }
 ```
+</details>
 
 <details>
 <summary>code 설명</summary>
