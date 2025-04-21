@@ -29,7 +29,7 @@ endmodule
 
   
 
-module APB_SlaveIntf (
+module APB_SlaveIntf_GPO (
     // global signal
     input  logic        PCLK,
     input  logic        PRESET,

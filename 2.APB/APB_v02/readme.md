@@ -8,3 +8,8 @@ IDR : 0x04
 ODR: 0x08
 
 이렇게 register 3개 쓰기!!
+
+
+c언어 코드: GPIO typdef 만들기
+![](img.png)
+
