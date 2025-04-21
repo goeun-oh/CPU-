@@ -7,7 +7,6 @@ module GPIO (
     inout logic [7:0] inoutPort
 );
 
-
     genvar i;
     generate
         for (i = 0; i < 8; i++) begin
