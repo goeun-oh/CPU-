@@ -1,4 +1,4 @@
-RAM 연동하기
+### RAM 연동하기
 =========================
 
 RISC-V CPU<->APB Master <-> APB Slave (RAM)
@@ -22,6 +22,8 @@ Mem stage 에서 다음 stage로 넘어 가기 위한 조건은 Ready 신호가 
 3. 주소 따라서 특정 peri에 잘 읽고 써지는지 확인하기 (simulation)
 
 ---
+
+### GPO 연동하기기
 ![](img.png)
 CPU <-> APB_Slave <-> GPO
 
@@ -107,3 +109,11 @@ void delay(int n)
     }
 }
 ```
+
+
+### GPI 연동하기
+Mode Register, inputData Register
+GPI input에 sw 연결
+![](img3.png)
+
+mode Reg가 0이어야 IDR에 write이 가능
