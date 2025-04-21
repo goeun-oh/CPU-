@@ -58,7 +58,7 @@ module MCU (
 
 
     ram U_RAM(
-        .*,
+        .*,  
         .PSEL(PSEL_RAM),
         .PRDATA(PRDATA_RAM),
         .PREADY(PREADY_RAM)

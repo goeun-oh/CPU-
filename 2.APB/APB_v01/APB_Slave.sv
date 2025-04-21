@@ -27,7 +27,7 @@ module GPO_Periph (
 
 endmodule
 
-
+  
 
 module APB_SlaveIntf (
     // global signal

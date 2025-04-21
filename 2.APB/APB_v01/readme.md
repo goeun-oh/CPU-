@@ -49,6 +49,10 @@ outData offset: 0x1000_1000 + 0x04
 ---
 GPO Test code 
 1. 8 led 동시 점멸
+
+<details>
+<summary>GPO Test code</summary>
+
 ```c
 #include <stdint.h>
 #define GPOA_BASEADDR 0x10001000
@@ -79,8 +83,13 @@ void delay(int n)
     }
 }
 ```
+</details>
 
 2. shift
+
+<details>
+<summary>GPO Test code</summary>
+
 ```c
 #include <stdint.h>
 #define GPOA_BASEADDR 0x10001000
@@ -109,6 +118,7 @@ void delay(int n)
     }
 }
 ```
+</details>
 
 
 ### GPI 연동하기
@@ -117,3 +127,46 @@ GPI input에 sw 연결
 ![](img3.png)
 
 mode Reg가 0이어야 IDR에 write이 가능
+
+1. switch를 눌렀을 때 led가 켜지게 하기
+
+<details>
+<summary>GPI Test code</summary>
+
+```c
+#include <stdint.h>
+#define APB_BASEADDR 0x10000000
+#define GPOA_BASEADDR (APB_BASEADDR + 0x1000)
+#define GPIB_BASEADDR (APB_BASEADDR + 0x2000)
+
+#define GPOA_MODEREG *(uint32_t *)(GPOA_BASEADDR + 0x00)
+#define GPOA_ODREG *(uint32_t *)(GPOA_BASEADDR + 0x04)
+#define GPIB_MODEREG *(uint32_t *)(GPIB_BASEADDR + 0x00)
+#define GPIB_IDREG *(uint32_t *)(GPIB_BASEADDR + 0x04)
+
+
+void delay(int n);
+
+int main(){
+    GPOA_MODEREG  = 0xff;
+    GPIB_MODEREG = 0x00;
+    while (1){
+        GPOA_ODREG = GPIB_IDREG;
+        delay(500);
+    }
+    return 0;
+}
+
+
+void delay(int n)
+{
+    uint32_t temp = 0;
+    for(int i=0; i<n; i++){
+        for (int j=0; j< 1000; j++){
+            temp++;
+        }
+    }
+}
+```
+
+</details>
