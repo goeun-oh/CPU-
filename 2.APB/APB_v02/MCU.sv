@@ -3,7 +3,8 @@
 module MCU (
     input logic clk,
     input logic reset,
-    inout logic [7:0] inoutPort
+    inout logic [7:0] sw,
+    inout logic [7:0] led
 );
 
     //ROM Signals
@@ -63,7 +64,7 @@ module MCU (
         .PSEL(PSEL_RAM),
         .PRDATA(PRDATA_RAM),
         .PREADY(PREADY_RAM)
-    );
+    );   
 
     APB_Master U_APB_Master (
         .*,
@@ -80,8 +81,8 @@ module MCU (
         .PREADY2(),
         .PREADY3()
     );
-
-    
+  
+      
     GPIO_Periph U_GPIO_Periph (
         .*,
         .PSEL(PSEL_GPIO),
@@ -92,3 +93,4 @@ module MCU (
 
 
 endmodule
+  

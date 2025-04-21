@@ -1,17 +1,18 @@
 `timescale 1ns / 1ps
 
 module GPIO (
+    inout logic [7:0] led,
+    inout logic [7:0] sw,
     input  logic [7:0] modeReg,
     input  logic [7:0] odReg,
-    output logic [7:0] idReg,    //input data Register
-    inout logic [7:0] inoutPort
+    output logic [7:0] idReg   //input data Register
 );
 
     genvar i;
     generate
         for (i = 0; i < 8; i++) begin
-            assign inoutPort[i] = modeReg[i] ? odReg[i] : 1'bz;
-            assign idReg[i] = ~modeReg[i] ? inoutPort[i] : 1'bz;
+            assign led[i] = modeReg[i] ? odReg[i] : 1'bz;
+            assign idReg[i] = ~modeReg[i] ? sw[i] : 1'bz;
         end
     endgenerate
 endmodule
@@ -19,6 +20,8 @@ endmodule
 
 module GPIO_Periph (
     // global signal
+    inout logic [7:0] led,
+    inout logic [7:0] sw,
     input  logic        PCLK,
     input  logic        PRESET,
     // APB Interface Signals
@@ -29,8 +32,7 @@ module GPIO_Periph (
     input  logic        PSEL,
     //export Signals
     output logic [31:0] PRDATA,
-    output logic        PREADY,
-    inout  logic [ 7:0] inoutPort
+    output logic        PREADY
 );
 
 
