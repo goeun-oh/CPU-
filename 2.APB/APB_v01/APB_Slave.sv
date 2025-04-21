@@ -1,6 +1,35 @@
 `timescale 1ns / 1ps
 
-module APB_Slave (
+module GPO_Periph (
+    // global signal
+    input  logic        PCLK,
+    input  logic        PRESET,
+    // APB Interface Signals
+    input  logic [3:0] PADDR,
+    input  logic [31:0] PWDATA,
+    input  logic        PWRITE,
+    input  logic        PENABLE,
+    input  logic        PSEL,
+    //export Signals
+    output logic [31:0] PRDATA,
+    output logic        PREADY,
+    output logic [ 7:0] outPort
+);
+
+
+    logic [ 7:0] modeReg;
+    logic [ 7:0] odReg;
+
+    APB_SlaveIntf U_APB_Intf (.*);
+
+    GPO U_GPO (.*);
+
+
+endmodule
+
+
+
+module APB_SlaveIntf (
     // global signal
     input  logic        PCLK,
     input  logic        PRESET,
@@ -11,16 +40,20 @@ module APB_Slave (
     input  logic        PENABLE,
     input  logic        PSEL,
     output logic [31:0] PRDATA,
-    output logic        PREADY
+    output logic        PREADY,
+    //internal Signals
+    output logic [ 7:0] modeReg,
+    output logic [ 7:0] odReg
 );
-    logic [31:0] slv_reg0, slv_reg1, slv_reg2, slv_reg3;
-
+    logic [31:0] slv_reg0, slv_reg1; //, slv_reg2, slv_reg3;
+    assign modeReg = slv_reg0[7:0];
+    assign odReg   = slv_reg1[7:0];
     always_ff @(posedge PCLK, posedge PRESET) begin
         if (PRESET) begin
             slv_reg0 <= 0;
             slv_reg1 <= 0;
-            slv_reg2 <= 0;
-            slv_reg3 <= 0;
+            // slv_reg2 <= 0;
+            // slv_reg3 <= 0;
         end else begin
             if (PSEL && PENABLE) begin
                 PREADY <= 1'b1;
@@ -28,16 +61,16 @@ module APB_Slave (
                     case (PADDR[3:2])
                         2'd0: slv_reg0 <= PWDATA;
                         2'd1: slv_reg1 <= PWDATA;
-                        2'd2: slv_reg2 <= PWDATA;
-                        2'd3: slv_reg3 <= PWDATA;
+                        // 2'd2: slv_reg2 <= PWDATA;
+                        // 2'd3: slv_reg3 <= PWDATA;
                     endcase
                 end else begin
                     PRDATA <= 32'bx;
                     case (PADDR[3:2])
                         2'd0: PRDATA <= slv_reg0;
                         2'd1: PRDATA <= slv_reg1;
-                        2'd2: PRDATA <= slv_reg2;
-                        2'd3: PRDATA <= slv_reg3;
+                        // 2'd2: PRDATA <= slv_reg2;
+                        // 2'd3: PRDATA <= slv_reg3;
                     endcase
                 end
             end else begin
@@ -46,4 +79,25 @@ module APB_Slave (
         end
     end
 
+endmodule
+
+
+module GPO (
+    input  logic [7:0] modeReg,
+    input  logic [7:0] odReg,
+    output logic [7:0] outPort
+);
+    genvar i;
+    generate
+        for (i = 0; i < 8; i++) begin
+            assign outPort[i] = modeReg[i] ? odReg[i] : 1'bz;
+        end
+    endgenerate
+    /*
+    always_comb begin
+        for (int i=0; i<8; i++) begin
+            outPort[i]= modeReg[i]?odReg[i]:1'bz;
+        end
+    end
+    */
 endmodule

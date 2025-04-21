@@ -2,7 +2,8 @@
 
 module MCU (
     input logic clk,
-    input logic reset
+    input logic reset,
+    output logic [7:0] GPOA
 );
     //ROM Signals
     logic [31:0] instrCode;
@@ -21,15 +22,15 @@ module MCU (
     logic        PWRITE;
     logic        PENABLE;
     logic        PSEL_RAM;
-    logic        PSEL1;
+    logic        PSEL_GPO;
     logic        PSEL2;
     logic        PSEL3;
     logic [31:0] PRDATA_RAM;
-    logic [31:0] PRDATA1;
+    logic [31:0] PRDATA_GPO;
     logic [31:0] PRDATA2;
     logic [31:0] PRDATA3;
     logic        PREADY_RAM;
-    logic        PREADY1;
+    logic        PREADY_GPO;
     logic        PREADY2;
     logic        PREADY3;
     //CPU-APB Master Signals
@@ -65,17 +66,26 @@ module MCU (
     APB_Master U_APB_Master (
         .*,
         .PSEL0  (PSEL_RAM),
-        .PSEL1  (),
+        .PSEL1  (PSEL_GPO),
         .PSEL2  (),
         .PSEL3  (),
         .PRDATA0(PRDATA_RAM),
-        .PRDATA1(),
+        .PRDATA1(PRDATA_GPO),
         .PRDATA2(),
         .PRDATA3(),
         .PREADY0(PREADY_RAM),
-        .PREADY1(),
+        .PREADY1(PREADY_GPO),
         .PREADY2(),
         .PREADY3()
     );
+
+    GPO_Periph U_GPOA(
+        .*,
+        .PSEL(PSEL_GPO),
+        .PRDATA(PRDATA_GPO),
+        .PREADY(PREADY_GPO),
+        .outPort(GPOA)
+    );
+
 
 endmodule

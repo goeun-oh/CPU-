@@ -4,6 +4,7 @@
 module tb();
     logic clk;
     logic reset;
+    logic [7:0] GPOA;
 
     initial begin
         clk =0; reset=0;
@@ -15,4 +16,4 @@ module tb();
 
     always #5 clk= ~clk;
     MCU dut(.*);
-endmodule
+endmodule  

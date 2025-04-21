@@ -2,7 +2,7 @@
 
 module ram (
     input  logic        PCLK,
-    input  logic [31:0] PADDR,
+    input  logic [11:0] PADDR,
     input  logic [31:0] PWDATA,
     input  logic        PWRITE,
     input  logic        PENABLE,
@@ -10,15 +10,16 @@ module ram (
     output logic [31:0] PRDATA,
     output logic        PREADY
 );
-    logic [31:0] mem[0:2**10-1];
+    logic [31:0] mem[0:2**10-1]; // RAM 주소: 0x1000_0000~0x1000_0fff 따라서 12 bit!
 
     always_ff @( posedge PCLK ) begin
         PREADY <= 1'b0;
         if (PSEL & PENABLE) begin
             PREADY <= 1'b1;
-            if (PWRITE) mem[PADDR[9:2]] <= PWDATA;
-            else PRDATA <= mem[PADDR[9:2]];
+            if (PWRITE) mem[PADDR[11:2]] <= PWDATA;
+            else PRDATA <= mem[PADDR[11:2]];
         end
     end
 
 endmodule
+   
