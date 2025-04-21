@@ -14,7 +14,7 @@ module GPI (
 endmodule
 
 
-module GPO_Periph (
+module GPI_Periph (
     // global signal
     input  logic        PCLK,
     input  logic        PRESET,
@@ -34,7 +34,7 @@ module GPO_Periph (
     logic [ 7:0] modeReg;
     logic [ 7:0] idReg;
 
-    APB_SlaveIntf U_APB_Intf_GPI (.*);
+    APB_SlaveIntf_GPI U_APB_Intf_GPI (.*);
 
     GPI U_GPI (.*);
 
