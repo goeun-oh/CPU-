@@ -46,8 +46,7 @@ outData offset: 0x1000_1000 + 0x04
 > 내가 만든 IP는 "GPO", 통신을 하기위해 APB Slave를 거친다.
 
 
----
-GPO Test code 
+**GPO Test code** 
 1. 8 led 동시 점멸
 
 <details>
