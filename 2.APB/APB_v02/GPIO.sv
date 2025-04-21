@@ -18,7 +18,7 @@ module GPIO (
 endmodule
 
 
-module GPI_Periph (
+module GPIO_Periph (
     // global signal
     input  logic        PCLK,
     input  logic        PRESET,
@@ -41,7 +41,7 @@ module GPI_Periph (
 
     APB_SlaveIntf_GPIO U_APB_Intf_GPIO (.*);
 
-    GPI U_GPIO (.*);
+    GPIO U_GPIO (.*);
 
 
 endmodule
