@@ -1,17 +1,24 @@
 `timescale 1ns / 1ps
 
 module ram (
-    input  logic        clk,
-    input  logic        we,
-    input  logic [31:0] addr,
-    input  logic [31:0] wData,
-    output logic [31:0] rData
+    input  logic        PCLK,
+    input  logic [31:0] PADDR,
+    input  logic [31:0] PWDATA,
+    input  logic        PWRITE,
+    input  logic        PENABLE,
+    input  logic        PSEL,
+    output logic [31:0] PRDATA,
+    output logic        PREADY
 );
-    logic [31:0] mem[0:63];
+    logic [31:0] mem[0:2**10-1];
 
-    always_ff @( posedge clk ) begin
-        if (we) mem[addr[31:2]] <= wData;
+    always_ff @( posedge PCLK ) begin
+        PREADY <= 1'b0;
+        if (PSEL & PENABLE) begin
+            PREADY <= 1'b1;
+            if (PWRITE) mem[PADDR[9:2]] <= PWDATA;
+            else PRDATA <= mem[PADDR[9:2]];
+        end
     end
 
-    assign rData = mem[addr[31:2]];
 endmodule

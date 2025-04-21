@@ -17,4 +17,4 @@ Mem stage 에서 다음 stage로 넘어 가기 위한 조건은 Ready 신호가 
 
 ---
 1. RISC-V CPU <-> APB Master 연결하기
-
+2. APB Master <-> APB Slave(RAM) 연결하기
