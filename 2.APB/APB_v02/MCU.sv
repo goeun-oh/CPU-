@@ -30,10 +30,10 @@ module MCU (
     logic        PREADY_GPO;
     logic        PREADY_GPI;
     logic        PREADY_GPIOC;
-    logic        PREADY_GPIOD;
+    logic        PREADY_GPIOD;  
 
     // CPU - APB_Master Signals
-    // Internal Interface Signals
+    // Internal Interface Signals  
     logic        transfer;  // trigger signal
     logic        ready;
     logic [31:0] addr;
