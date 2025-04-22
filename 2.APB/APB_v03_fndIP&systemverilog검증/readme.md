@@ -19,7 +19,7 @@ FDR: FND Data Register
 
 
 
-### systemVerilog를 통해 검증! (FND IP 만!!, CPU도 하기에는 너무 복잡하대)
+### systemVerilog를 통해 검증! (FND 만!!, CPU도 하기에는 너무 복잡하대)
 
 **[SystemVerilog Test구조]**
 
@@ -59,3 +59,6 @@ FDR: FND Data Register
 TRANSACTION을 RANDOM하게 만들 수 있음!!
 비트 수가 많을수록 손으로하기 힘들다. RANDOM하게 만들 수 있는 구조가 필요하다!
 
+
+> 캡슐화 : class의 특징
+변수와 함수를 하나로 묶어준다
