@@ -4,7 +4,9 @@ module MCU (
     input  logic       clk,
     input  logic       reset,
     output logic [7:0] GPOA,
-    input  logic [7:0] GPIB
+    input  logic [7:0] GPIB,
+    inout  logic [7:0] GPIOC,
+    inout  logic [7:0] GPIOD
 );
     // global signals
     logic        PCLK;
@@ -17,15 +19,18 @@ module MCU (
     logic        PSEL_RAM;
     logic        PSEL_GPO;
     logic        PSEL_GPI;
-    logic        PSEL3;
+    logic        PSEL_GPIOC;
+    logic        PSEL_GPIOD;
     logic [31:0] PRDATA_RAM;
     logic [31:0] PRDATA_GPO;
     logic [31:0] PRDATA_GPI;
-    logic [31:0] PRDATA3;
+    logic [31:0] PRDATA_GPIOC;
+    logic [31:0] PRDATA_GPIOD;
     logic        PREADY_RAM;
     logic        PREADY_GPO;
     logic        PREADY_GPI;
-    logic        PREADY3;
+    logic        PREADY_GPIOC;
+    logic        PREADY_GPIOD;
 
     // CPU - APB_Master Signals
     // Internal Interface Signals
@@ -63,15 +68,18 @@ module MCU (
         .PSEL0  (PSEL_RAM),
         .PSEL1  (PSEL_GPO),
         .PSEL2  (PSEL_GPI),
-        .PSEL3  (),
+        .PSEL3  (PSEL_GPIOC),
+        .PSEL4  (PSEL_GPIOD),
         .PRDATA0(PRDATA_RAM),
         .PRDATA1(PRDATA_GPO),
         .PRDATA2(PRDATA_GPI),
-        .PRDATA3(),
+        .PRDATA3(PRDATA_GPIOC),
+        .PRDATA4(PRDATA_GPIOD),
         .PREADY0(PREADY_RAM),
         .PREADY1(PREADY_GPO),
         .PREADY2(PREADY_GPI),
-        .PREADY3()
+        .PREADY3(PREADY_GPIOC),
+        .PREADY4(PREADY_GPIOD)
     );
 
     ram U_RAM (
@@ -97,5 +105,22 @@ module MCU (
         .PREADY(PREADY_GPI),
         // inport signals
         .inPort(GPIB)
+    );
+
+
+    GPIO_Periph U_GPIOC (
+        .*,
+        .PSEL(PSEL_GPIOC),
+        .PRDATA(PRDATA_GPIOC),
+        .PREADY(PREADY_GPIOC),
+        .inoutPort(GPIOC)
+    );
+
+    GPIO_Periph U_GPIOD (
+        .*,
+        .PSEL(PSEL_GPIOD),
+        .PRDATA(PRDATA_GPIOD),
+        .PREADY(PREADY_GPIOD),
+        .inoutPort(GPIOD)
     );
 endmodule
