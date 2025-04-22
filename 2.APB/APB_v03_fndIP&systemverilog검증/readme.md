@@ -1,0 +1,61 @@
+### 과제: FND IP를 APB bus에 붙이기
+
+![](img.png)
+- enable 신호가 1일 때만 FND가 동작
+- FMR : 4bit 짜리, 어떤 FND를 켤건지 정함
+- FDR: 4bit 짜리, 0~9까지의 숫자를 표시 가능
+
+FCR: IP의 enable 신호 > FND를 on/off 하는 신호
+FMR: FND COM Register
+FDR: FND Data Register
+
+
+[MY IP]
+0x00: FCR 
+0x04: FMR
+0x08: FDR
+
+![](img2.png)
+
+
+
+### systemVerilog를 통해 검증! (FND IP 만!!, CPU도 하기에는 너무 복잡하대)
+
+**[SystemVerilog Test구조]**
+
+![](img3.png)
+
+**env**
+
+- **generator**
+    - transaction 값을 만들어 mail box에 넣어둠
+
+- **driver** 
+    - mail box에 transaction 이 있다면 갖고와서 interface에 넘김
+
+
+- **monitor** 
+    - 입출력 값들을 monitoring 함
+    - DUT의 입력값, 출력값을 둘 다 모니터링함
+    - 이 입출력 값을 transaction에 저장하고 이 transaction을 mailbox에 넣음
+
+- **scoreboard** 
+    - mailbox를 감시하고 있다가 transaction이 들어오면 땡겨옴
+    - reference model 값과 transaction 값을 비교함
+
+
+**DUT**
+- Test하기 위한 IP!
+
+**Interface**
+- DUT와 env를 연결해주는 역할을 함
+
+> mailbox라는 class는 systemVerilog에서 제공하는 class이다!
+
+복잡한 IP일수록(Test 해야하는 Data가 많을 수록) 간단한 testbench 구조는 test 하기 힘들다.
+
+**[이와 같은 systemVerilog Testbench 구조를 사용하는 이유]**
+**RANDOM** 값 생성이 편리하기 때문에!
+TRANSACTION을 RANDOM하게 만들 수 있음!!
+비트 수가 많을수록 손으로하기 힘들다. RANDOM하게 만들 수 있는 구조가 필요하다!
+
