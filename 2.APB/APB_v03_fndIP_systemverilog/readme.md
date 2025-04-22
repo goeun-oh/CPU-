@@ -62,3 +62,12 @@ TRANSACTION을 RANDOM하게 만들 수 있음!!
 
 > 캡슐화 : class의 특징
 변수와 함수를 하나로 묶어준다
+
+
+
+random 값을 만들 때 제약을 줄 수 있다!
+constraint 사용
+
+```verilog
+    constraint c_paddr {PADDR inside {4'h0, 4'h4, 4'h8};} //이 중에 하나만 random 값으로 쓰겠다
+```

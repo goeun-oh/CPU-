@@ -15,6 +15,9 @@ class transaction;
     logic      [ 7:0] fndFont;  //dut out data
     logic      [ 3:0] fndComm;  //dut out data
 
+    constraint c_paddr {PADDR inside {4'h0, 4'h4, 4'h8};} //이 중에 하나만 random 값으로 쓰겠다
+    constraint c_wdata {PWDATA <10;}
+
     task display(string name);
         $display(
             "[%s] PADDR=%h, PWDATA=%h, PWRITE=%h, PENABLE=%h, PSEL=%h, PRDATA=%h, PREADY=%h, fndComm=%h, fndFont=%h",
