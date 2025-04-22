@@ -40,9 +40,11 @@ endinterface  //APB_fnd_Controller
 
 class generator;
     mailbox #(transaction) Gen2Drv_mbox;
+    event gen_next_event;
 
-    function new(mailbox #(transaction) Gen2Drv_mbox);
+    function new(mailbox #(transaction) Gen2Drv_mbox, event gen_next_event);
         this.Gen2Drv_mbox= Gen2Drv_mbox;
+        this.gen_next_event = gen_next_event;
     endfunction
 
     task run(int repeat_counter);
@@ -52,6 +54,9 @@ class generator;
             if (!fnd_tr.randomize()) $error("Randomization fail!");
             fnd_tr.display("GEN");
             Gen2Drv_mbox.put(fnd_tr);
+            @(gen_next_event); 
+            //wati a event from driver
+            //이게 없으면 repeat_counter 만큼 transaction이 계속 만들어질것, 기다리고 만들어야한다.
         end
     endtask
 
