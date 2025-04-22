@@ -10,3 +10,4 @@ FDR: FND Data Register
 0x04: FMR
 0x08: FDR
 
+![](img2.png)

@@ -41,11 +41,11 @@ module MCU (
     logic        dataWe;
     logic [31:0] dataAddr;
     logic [31:0] dataWData;
-    logic [31:0] dataRData;
+    logic [31:0] dataRData;  
 
     // ROM Signals
     logic [31:0] instrCode;
-    logic [31:0] instrMemAddr;
+    logic [31:0] instrMemAddr;  
 
     assign PCLK = clk;
     assign PRESET = reset;
@@ -56,7 +56,7 @@ module MCU (
 
     rom U_ROM (
         .addr(instrMemAddr),
-        .data(instrCode)  
+        .data(instrCode)    
     );
 
     RV32I_Core U_Core (.*);
@@ -78,10 +78,10 @@ module MCU (
         .PREADY2(PREADY_GPI),
         .PREADY3(PREADY_GPIOC),
         .PREADY4(PREADY_FND)
-    );
-
+    );    
+  
     ram U_RAM (
-        .*,
+        .*,  
         .PSEL  (PSEL_RAM),
         .PRDATA(PRDATA_RAM),
         .PREADY(PREADY_RAM)
@@ -90,7 +90,7 @@ module MCU (
     // GPO_Periph U_GPOA (
     //     .*,
     //     .PSEL   (PSEL_GPO),
-    //     .PRDATA (PRDATA_GPO),
+    //     .PRDATA (PRDATA_GPO),  
     //     .PREADY (PREADY_GPO),
     //     // export signals
     //     .outPort(GPOA)

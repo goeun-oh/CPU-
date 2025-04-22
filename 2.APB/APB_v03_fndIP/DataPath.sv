@@ -13,7 +13,7 @@ module DataPath (
     input  logic        branch,
     input  logic        jal,
     input  logic        jalr,
-    input  logic        PCEn,
+    input  logic        PCEn,  
     // instr memory side port
     output logic [31:0] instrMemAddr,
     input  logic [31:0] instrCode,

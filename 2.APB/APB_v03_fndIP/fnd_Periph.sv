@@ -18,11 +18,11 @@ module fnd_Periph (
 );
 
     logic FCR;
-    logic [3:0] FMR;
-    logic [3:0] FDR;
+    logic [7:0] FMR;
+    logic [7:0] FDR;
 
     fnd_SlaveIntf U_fnd_Intf (.*);
-    fnd U_fnd (.*);
+    fndController U_fnd (.*);
 endmodule
 
 module fnd_SlaveIntf (
@@ -38,9 +38,9 @@ module fnd_SlaveIntf (
     output logic [31:0] PRDATA,
     output logic        PREADY,
     // internal signals
-    output logic        FCR,
-    output logic [ 3:0] FMR,
-    output logic [ 3:0] FDR
+    output logic [ 7:0] FCR,
+    output logic [ 7:0] FMR,
+    output logic [ 7:0] FDR
 );
     logic [31:0] slv_reg0, slv_reg1, slv_reg2;  //, slv_reg3;
 
@@ -83,7 +83,7 @@ module fnd_SlaveIntf (
 
 endmodule
 
-module fnd (
+module fndController (
     input  logic       FCR,
     input  logic [3:0] FMR,
     input  logic [3:0] FDR,
@@ -91,6 +91,7 @@ module fnd (
     output logic [7:0] fndFont
 );
 
+    assign fndComm = FCR ? ~FMR: 4'b1111;
 
     BCDtoSEG U_BCD_to_SEG(
         .bcd(FDR),
@@ -98,20 +99,14 @@ module fnd (
     ); 
 
 
-    decoder U_decoder(
-        .en(FCR),
-        .x(FMR),
-        .y(fndComm)
-    );
-
-
-
-
 endmodule
 
+
+
+
 module BCDtoSEG(
-    input [3:0] bcd,
-    output reg[7:0] seg
+    input logic [3:0] bcd,
+    output logic [7:0] seg
     );
 
     always @(bcd) begin
@@ -135,24 +130,5 @@ module BCDtoSEG(
 
         default:seg=8'hff;
         endcase
-    end
-endmodule
-
-
-module decoder(
-    input en,
-    input [3:0] x,
-    output reg [3:0] y
-    );
-    always @(x) begin
-        y=4'bx;
-        if (en) begin
-            case(x)
-                4'b0000: y=4'b1110;
-                4'b0001: y=4'b1101;
-                4'b0010: y=4'b1011;
-                4'b0011: y=4'b0111;
-            endcase
-        end
     end
 endmodule
