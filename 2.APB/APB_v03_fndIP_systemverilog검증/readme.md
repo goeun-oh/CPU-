@@ -11,3 +11,7 @@ FDR: FND Data Register
 0x08: FDR
 
 ![](img2.png)
+
+
+
++ systemVerilog를 통해 검증!
