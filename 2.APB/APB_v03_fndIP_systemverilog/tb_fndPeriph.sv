@@ -20,15 +20,13 @@ class transaction;
  //   constraint c_wdata {PWDATA < 10;}
 
     constraint c_paddr_0{
-        if (PADDR ==0){
-            if (PADDR ==0)
-            PWDATA inside {1'b0, 1'b1};
-            else
-            if(PADDR ==4)
-            PWDATA < 4'b1111;
-            else
-            if (PADDR ==8) PWDATA <10;
-        }
+        if (PADDR ==0)
+        PWDATA inside {1'b0, 1'b1};
+        else
+        if(PADDR ==4)
+        PWDATA < 4'b1111;
+        else
+        if (PADDR ==8) PWDATA <10;
     }
 
     task display(string name);
@@ -45,7 +43,7 @@ interface APB_fnd_Controller;
     logic        PCLK;
     logic        PRESET;
     logic [ 3:0] PADDR;
-    logic [3:0] PWDATA;
+    logic [31:0] PWDATA;
     logic        PWRITE;
     logic        PENABLE;
     logic        PSEL;
@@ -99,14 +97,14 @@ class driver;
             //setup 구간
             @(posedge fnd_intf.PCLK);
             fnd_intf.PADDR   <= fnd_tr.PADDR;
-            fnd_intf.PWDATA  <= fnd_tr.PWDATA[3:0];
+            fnd_intf.PWDATA  <= fnd_tr.PWDATA;
             fnd_intf.PWRITE  <= 1'b1;
             fnd_intf.PENABLE <= 1'b0;
             fnd_intf.PSEL    <= 1'b1;
             //access구간
             @(posedge fnd_intf.PCLK);
             fnd_intf.PADDR   <= fnd_tr.PADDR;
-            fnd_intf.PWDATA  <= fnd_tr.PWDATA[3:0];
+            fnd_intf.PWDATA  <= fnd_tr.PWDATA;
             fnd_intf.PWRITE  <= 1'b1;
             fnd_intf.PENABLE <= 1'b1;
             fnd_intf.PSEL    <= 1'b1;
