@@ -1,7 +1,9 @@
 `timescale 1ns / 1ps
 
 class transaction;
-
+    logic PCLK;
+    logic PRESET;
+    logic PEN;
     rand logic [ 3:0] PADDR;
     rand logic [31:0] PWDATA;
     rand logic        PWRITE;
@@ -15,8 +17,10 @@ class transaction;
     logic      [ 7:0] fndFont;  //dut out data
     logic      [ 3:0] fndComm;  //dut out data
 
-    constraint c_paddr {PADDR inside {4'h0, 4'h4, 4'h8};} //이 중에 하나만 random 값으로 쓰겠다
-    constraint c_wdata {PWDATA <10;}
+    constraint c_paddr {
+        PADDR inside {4'h0, 4'h4, 4'h8};
+    }  //이 중에 하나만 random 값으로 쓰겠다
+    constraint c_wdata {PWDATA < 10;}
 
     task display(string name);
         $display(
@@ -112,16 +116,88 @@ class driver;
 endclass
 
 
+class monitor;
+    mailbox #(transaction) Mon2Scb_mbox;
+    virtual APB_fnd_Controller fnd_intf;
+
+    function new(mailbox#(transaction) Mon2Scb_mbox,
+                 virtual APB_fnd_Controller fnd_intf);
+        this.fnd_intf = fnd_intf;
+        this.Mon2Scb_mbox = Mon2Scb_mbox;
+    endfunction
+
+
+    task run();
+        transaction fnd_tr;
+        forever begin
+            fnd_tr = new();
+            fnd_tr.PCLK    = fnd_intf.PCLK;
+            fnd_tr.PRESET  = fnd_intf.PRESET;
+            fnd_tr.PADDR   = fnd_intf.PADDR;
+            fnd_tr.PWDATA  = fnd_intf.PWDATA;
+            fnd_tr.PWRITE  = fnd_intf.PWRITE;
+            fnd_tr.PENABLE = fnd_intf.PENABLE;
+            fnd_tr.PSEL    = fnd_intf.PSEL;
+            fnd_tr.PRDATA  = fnd_intf.PRDATA;
+            fnd_tr.PREADY  = fnd_intf.PREADY;
+            fnd_tr.fndFont = fnd_intf.fndFont;
+            fnd_tr.fndComm = fnd_intf.fndComm;
+            fnd_tr.display("MON");
+            Mon2Scb_mbox.put(fnd_tr);
+        end
+    endtask
+endclass
+
+class scoreboard;
+    mailbox #(transaction) Mon2Scb_mbox;
+    logic [31:0] slv_reg [0:2**3-1];
+
+    function new(mailbox #(transaction) Mon2Scb_mbox);
+        this.Mon2Scb_mbox=Mon2Scb_mbox;
+        foreach (slv_reg[i]) slv_reg[i] =0;
+    endfunction
+
+    task run();
+        transaction fnd_tr;
+        forever begin
+            Mon2Scb_mbox.get(fnd_tr);
+            fnd_tr.display("SCB");
+            if(fnd_tr.PENABLE & fnd_tr.PEN) begin
+                if (fnd_tr.PWRITE) begin
+                    slv_reg[fnd_tr.PADDR] = fnd_tr.PWDATA;
+                end else begin
+                    if(slv_reg[fnd_tr.PADDR] === fnd_tr.PRDATA) begin
+                        $display("PASS! Matched Data! ref_model: %h == rData: %h",
+                        slv_reg[fnd_tr.PADDR], fnd_tr.PRDATA);
+                    end else begin
+                        $display("FAIL! Dismatched Data! ref_model: %h != rData: %h",
+                        slv_reg[fnd_tr.PADDR], fnd_tr.PRDATA);
+                    end
+                end
+            end
+        end
+    endtask //automatic
+
+endclass
+
 class envirnment;
     mailbox #(transaction) Gen2Drv_mbox;
+    mailbox #(transaction) Mon2Scb_mbox;
+
     generator fnd_gen;
     driver fnd_drv;
+    monitor fnd_mon;
+    scoreboard fnd_scr;
+
     event gen_next_event;
 
     function new(virtual APB_fnd_Controller fnd_intf);
         Gen2Drv_mbox = new();
+        Mon2Scb_mbox = new();
         this.fnd_gen = new(Gen2Drv_mbox, gen_next_event);
         this.fnd_drv = new(Gen2Drv_mbox, gen_next_event, fnd_intf);
+        this.fnd_mon = new(Mon2Scb_mbox, fnd_intf);
+        this.fnd_scr = new(Mon2Scb_mbox);
     endfunction
 
 
@@ -129,6 +205,8 @@ class envirnment;
         fork
             fnd_gen.run(count);
             fnd_drv.run();
+            fnd_mon.run();
+            fnd_scr.run();
         join_any
     endtask  //run
 

@@ -72,3 +72,42 @@ constraint 사용
     constraint c_paddr {PADDR inside {4'h0, 4'h4, 4'h8};} //이 중에 하나만 random 값으로 쓰겠다
     constraint c_wdata {PWDATA <10;}
 ```
+
+
+-----
+![](img4.png)
+
+```verilog
+    transaction fnd_tr;  //heap 영역에 transaction 메모리 공간 생성 
+    fnd_tr = new(); //stack 영역에 fnd_tr 메모리 공간 생성, heap 영역에 instance 생성됨
+    //new(): 해당 instance의 주소, reference 값
+    //fnd_tr은 handler.
+    // handler는 heap 영역에 있는 instance를 가리키고 있다. (첫번째 주소), & 자료형의 크기만큼 heap 영역에 메모리 공간을 할당한다.(transaction class의 크기만큼)
+
+    if(!fnd_tr.randomize()) $error("randomize failed"); 
+    // .randomize() : random 값을 생성하는 함수 -> if 이전에 이 함수가 먼저 실행되어 random 값이 먼저 생성된다.
+    // 이후 if 문이 실행되어 randomize가 성공했는지 실패했는지 확인한다.
+    // randomize()가 실패하면 프로그램이 멈춘다.
+```
+
+mailbox는 queue 형태로 되어있다.
+
+
+![](img5.png)
+위 그림은 아래 코드를 시각화 한것이다
+```systemverilog
+class envirnment;
+    mailbox #(transaction) Gen2Drv_mbox;
+
+    generator fnd_gen;
+    driver fnd_drv;
+
+    event gen_next_event;
+
+    function new(virtual APB_fnd_Controller fnd_intf);
+        Gen2Drv_mbox = new();
+        this.fnd_gen = new(Gen2Drv_mbox, gen_next_event);
+        this.fnd_drv = new(Gen2Drv_mbox, gen_next_event, fnd_intf);
+    endfunction
+endclass
+```
