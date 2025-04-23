@@ -5,6 +5,7 @@
 typedef struct {
     __IO uint32_t FCR;
     __IO uint32_t FDR;
+    __IO uint32_t FPR;
 }FND_TypeDef;
 
 
@@ -25,22 +26,25 @@ typedef struct {
 void delay(int n);
 void fndEn(FND_TypeDef* FNDx, uint32_t n);
 void fndfont(FND_TypeDef* FNDx, uint32_t fndFont);
+void fndDot(FND_TypeDef* FNDx, uint32_t Dot);
 
 
 int main()
 {   
     uint32_t count = 0;
+    uint32_t temp = 0;
     while(1)
     {   
         fndEn(FND, 0x01);
 
         for (int i=0; i<10000; i++){
-            fndfont(FND, count);
-            count++;
+            fndfont(FND, i);
+            fndDot(FND, temp);
+            temp++;
             delay(100);
         }
         count=0;
-        delay(500);
+        temp=0;
     }
     return 0;
 };
@@ -66,4 +70,8 @@ void fndEn(FND_TypeDef* FNDx, uint32_t n){
 
 void fndfont(FND_TypeDef* FNDx, uint32_t fndFont){
     FNDx-> FDR = fndFont;
+}
+
+void fndDot(FND_TypeDef* FNDx, uint32_t Dot){
+    FNDx-> FPR = Dot;
 }
