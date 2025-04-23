@@ -1,9 +1,6 @@
 `timescale 1ns / 1ps
 
 class transaction;
-    logic PCLK;
-    logic PRESET;
-    logic PEN;
     rand logic [ 3:0] PADDR;
     rand logic [31:0] PWDATA;
     rand logic        PWRITE;
@@ -20,7 +17,19 @@ class transaction;
     constraint c_paddr {
         PADDR inside {4'h0, 4'h4, 4'h8};
     }  //이 중에 하나만 random 값으로 쓰겠다
-    constraint c_wdata {PWDATA < 10;}
+ //   constraint c_wdata {PWDATA < 10;}
+
+    constraint c_paddr_0{
+        if (PADDR ==0){
+            if (PADDR ==0)
+            PWDATA inside {1'b0, 1'b1};
+            else
+            if(PADDR ==4)
+            PWDATA < 4'b1111;
+            else
+            if (PADDR ==8) PWDATA <10;
+        }
+    }
 
     task display(string name);
         $display(
@@ -36,7 +45,7 @@ interface APB_fnd_Controller;
     logic        PCLK;
     logic        PRESET;
     logic [ 3:0] PADDR;
-    logic [31:0] PWDATA;
+    logic [3:0] PWDATA;
     logic        PWRITE;
     logic        PENABLE;
     logic        PSEL;
@@ -74,15 +83,13 @@ endclass
 class driver;
     virtual APB_fnd_Controller fnd_intf;
     mailbox #(transaction) Gen2Drv_mbox;
-    event gen_next_event;
     transaction fnd_tr;
 
 
-    function new(mailbox#(transaction) Gen2Drv_mbox, event gen_next_event,
+    function new(mailbox#(transaction) Gen2Drv_mbox, 
                  virtual APB_fnd_Controller fnd_intf);
         this.fnd_intf       = fnd_intf;
         this.Gen2Drv_mbox   = Gen2Drv_mbox;
-        this.gen_next_event = gen_next_event;
     endfunction
 
     task run();
@@ -92,14 +99,14 @@ class driver;
             //setup 구간
             @(posedge fnd_intf.PCLK);
             fnd_intf.PADDR   <= fnd_tr.PADDR;
-            fnd_intf.PWDATA  <= fnd_tr.PWDATA;
+            fnd_intf.PWDATA  <= fnd_tr.PWDATA[3:0];
             fnd_intf.PWRITE  <= 1'b1;
             fnd_intf.PENABLE <= 1'b0;
             fnd_intf.PSEL    <= 1'b1;
             //access구간
             @(posedge fnd_intf.PCLK);
             fnd_intf.PADDR   <= fnd_tr.PADDR;
-            fnd_intf.PWDATA  <= fnd_tr.PWDATA;
+            fnd_intf.PWDATA  <= fnd_tr.PWDATA[3:0];
             fnd_intf.PWRITE  <= 1'b1;
             fnd_intf.PENABLE <= 1'b1;
             fnd_intf.PSEL    <= 1'b1;
@@ -108,7 +115,6 @@ class driver;
             @(posedge fnd_intf.PCLK);
             @(posedge fnd_intf.PCLK);
 
-            ->gen_next_event;  //event trigger           
         end
     endtask
 
@@ -131,8 +137,8 @@ class monitor;
         transaction fnd_tr;
         forever begin
             fnd_tr = new();
-            fnd_tr.PCLK    = fnd_intf.PCLK;
-            fnd_tr.PRESET  = fnd_intf.PRESET;
+            @(posedge fnd_intf.PREADY);
+            #1;
             fnd_tr.PADDR   = fnd_intf.PADDR;
             fnd_tr.PWDATA  = fnd_intf.PWDATA;
             fnd_tr.PWRITE  = fnd_intf.PWRITE;
@@ -144,17 +150,41 @@ class monitor;
             fnd_tr.fndComm = fnd_intf.fndComm;
             fnd_tr.display("MON");
             Mon2Scb_mbox.put(fnd_tr);
+            @(posedge fnd_intf.PCLK);
+            @(posedge fnd_intf.PCLK);
+            @(posedge fnd_intf.PCLK);
         end
     endtask
 endclass
 
 class scoreboard;
     mailbox #(transaction) Mon2Scb_mbox;
-    logic [31:0] slv_reg [0:2**3-1];
+    logic [31:0] refFndReg[0:2];
+    event gen_next_event;
+    
+    logic [7:0] refFndFont [0:15]= '{
+        8'hc0,
+        8'hf9,
+        8'ha4,
+        8'hb0,
+        8'h99,
+        8'h92,
+        8'h82,
+        8'hf8,
+        8'h80,
+        8'h90,
+        8'h88,
+        8'h83,
+        8'hc6,
+        8'ha1,
+        8'h86,
+        8'h8e
+    };
 
-    function new(mailbox #(transaction) Mon2Scb_mbox);
-        this.Mon2Scb_mbox=Mon2Scb_mbox;
-        foreach (slv_reg[i]) slv_reg[i] =0;
+    function new(mailbox#(transaction) Mon2Scb_mbox, event gen_next_event);
+        this.Mon2Scb_mbox = Mon2Scb_mbox;
+        foreach (refFndReg[i]) refFndReg[i] = 0;
+        this.gen_next_event = gen_next_event;
     endfunction
 
     task run();
@@ -162,21 +192,38 @@ class scoreboard;
         forever begin
             Mon2Scb_mbox.get(fnd_tr);
             fnd_tr.display("SCB");
-            if(fnd_tr.PENABLE & fnd_tr.PEN) begin
-                if (fnd_tr.PWRITE) begin
-                    slv_reg[fnd_tr.PADDR] = fnd_tr.PWDATA;
+            
+            if (fnd_tr.PWRITE) begin
+                refFndReg[fnd_tr.PADDR[3:2]] = fnd_tr.PWDATA;
+                
+                if (refFndFont[refFndReg[2]][7:0] == fnd_tr.fndFont) begin
+                    $display(
+                        "FND Font PASS! ref_model: %h == wData: %h",
+                        refFndFont[refFndReg[2]][7:0], fnd_tr.fndFont);
                 end else begin
-                    if(slv_reg[fnd_tr.PADDR] === fnd_tr.PRDATA) begin
-                        $display("PASS! Matched Data! ref_model: %h == rData: %h",
-                        slv_reg[fnd_tr.PADDR], fnd_tr.PRDATA);
-                    end else begin
-                        $display("FAIL! Dismatched Data! ref_model: %h != rData: %h",
-                        slv_reg[fnd_tr.PADDR], fnd_tr.PRDATA);
-                    end
+                    $display(
+                        "FND Font FAIL! ref_model: %h != wData: %h",
+                        refFndFont[refFndReg[2]][7:0], fnd_tr.fndFont);
                 end
+
+                if (refFndReg[0] == 0) begin
+                    if(4'hf == fnd_tr.fndComm) $display("FND Enable Pass!");
+                    else $display("FND Enable Fail");
+                end else begin
+                    if (refFndReg[1][3:0] == ~fnd_tr.fndComm[3:0]) begin
+                        $display(
+                            "FND Comm PASS! ref_model: %h == wData: %h",
+                            refFndReg[1][3:0], ~fnd_tr.fndComm[3:0]);
+                    end else begin
+                        $display(
+                            "FND Comm Fail! ref_model: %h != wData: %h",
+                            refFndReg[1][3:0], ~fnd_tr.fndComm[3:0]);
+                    end
+                end 
+            -> gen_next_event;
             end
         end
-    endtask //automatic
+    endtask  //automatic
 
 endclass
 
@@ -191,13 +238,15 @@ class envirnment;
 
     event gen_next_event;
 
-    function new(virtual APB_fnd_Controller fnd_intf);
+    function new(
+        virtual APB_fnd_Controller fnd_intf
+    );  //this를 언제 붙여야 되는가? -> 똑같은 이름의 매개변수 값이 없다면 this를 안붙여도 된다.
         Gen2Drv_mbox = new();
         Mon2Scb_mbox = new();
-        this.fnd_gen = new(Gen2Drv_mbox, gen_next_event);
-        this.fnd_drv = new(Gen2Drv_mbox, gen_next_event, fnd_intf);
-        this.fnd_mon = new(Mon2Scb_mbox, fnd_intf);
-        this.fnd_scr = new(Mon2Scb_mbox);
+        fnd_gen      = new(Gen2Drv_mbox, gen_next_event);
+        fnd_drv      = new(Gen2Drv_mbox, fnd_intf);
+        fnd_mon      = new(Mon2Scb_mbox, fnd_intf);
+        fnd_scr      = new(Mon2Scb_mbox, gen_next_event);
     endfunction
 
 
@@ -227,7 +276,9 @@ module tb_fndPeriph ();
 
         fnd_env = new(fnd_intf);
         fnd_env.run(10);
-        #30 $finish;
+        #30 
+        $display("finish!");
+        $finish;
 
     end
 
