@@ -70,4 +70,5 @@ constraint 사용
 
 ```verilog
     constraint c_paddr {PADDR inside {4'h0, 4'h4, 4'h8};} //이 중에 하나만 random 값으로 쓰겠다
+    constraint c_wdata {PWDATA <10;}
 ```
