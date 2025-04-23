@@ -111,3 +111,21 @@ class envirnment;
     endfunction
 endclass
 ```
+
+stack은 handler (실제 instance화 된 메모리 공간을 가리키는 포인터)
+heap은 실제 intance화 된 object의 공간, 자료형의 크기만큼 heap 공간을 차지한다.
+
+
+
+
+```systemverilog
+    task run(int count);
+        fork
+            fnd_gen.run(count);
+            fnd_drv.run();
+            fnd_mon.run();
+            fnd_scr.run();
+        join_any
+    endtask  //run
+``` 
+fork join 안에 있는 함수들은 동시에 동작한다.
