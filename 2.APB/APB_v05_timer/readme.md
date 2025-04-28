@@ -48,7 +48,7 @@ RM0008_Reference Manual 최대한 똑같이 만들기 (따라 만들기기)
 
 
 ---
-
+![](schematic.png)
 PSC, APR reg를 추가해보자!
 ![](image.png)
 
