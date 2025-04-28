@@ -144,7 +144,7 @@ module clk_div (
                 count_next = count_next + 1;
                 tick_next  = 1'b0;
             end
-        end else if (clear) begin
+        end if (clear) begin
             count_next = 0;
         end
     end
@@ -166,11 +166,10 @@ module counter (
             if (counter == arr) begin
                 counter <= 0;
             end else begin
-                counter <= counter + 1;
+                if (clear)  counter <=0;
+                else counter <= counter + 1;
             end
-        end else if (clear) begin
-            counter <= 0;
-        end
+        end 
     end
 
 endmodule
