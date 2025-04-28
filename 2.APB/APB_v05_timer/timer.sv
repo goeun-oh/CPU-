@@ -16,6 +16,8 @@ module timer_Periph (
 
     logic [31:0] TCR;
     logic [31:0] TCNT;
+    logic [31:0] PSC;
+    logic [31:0] ARR;
 
     timer_SlaveIntf U_timer_Intf (.*);
 
@@ -24,6 +26,8 @@ module timer_Periph (
         .reset  (PRESET),
         .en     (TCR[0]),
         .clear  (TCR[1]),
+        .psc    (PSC),
+        .arr    (ARR),
         .counter(TCNT)
     );
 endmodule
@@ -42,21 +46,25 @@ module timer_SlaveIntf (
     output logic        PREADY,
     // internal signals
     output logic [31:0] TCR,
-    output logic [31:0] TCNT
+    output logic [31:0] TCNT,
+    output logic [31:0] PSC,
+    output logic [31:0] ARR
 );
-    logic [31:0] slv_reg0, slv_reg1;  //, slv_reg2;  //, slv_reg3;
+    logic [31:0] slv_reg0, slv_reg1, slv_reg2, slv_reg3;
 
 
     assign TCR  = slv_reg0;
     assign TCNT = slv_reg1;
+    assign PSC  = slv_reg2;
+    assign ARR  = slv_reg3;
 
 
     always_ff @(posedge PCLK, posedge PRESET) begin
         if (PRESET) begin
             slv_reg0 <= 0;
             slv_reg1 <= 0;
-            //slv_reg2 <= 0;
-            // slv_reg3 <= 0;
+            slv_reg2 <= 0;
+            slv_reg3 <= 0;
         end else begin
             if (PSEL && PENABLE) begin
                 PREADY <= 1'b1;
@@ -64,16 +72,16 @@ module timer_SlaveIntf (
                     case (PADDR[3:2])
                         2'd0: slv_reg0 <= PWDATA;
                         2'd1: slv_reg1 <= PWDATA;
-                        //2'd2: slv_reg2 <= PWDATA;
-                        // 2'd3: slv_reg3 <= PWDATA;
+                        2'd2: slv_reg2 <= PWDATA;
+                        2'd3: slv_reg3 <= PWDATA;
                     endcase
                 end else begin
                     PRDATA <= 32'bx;
                     case (PADDR[3:2])
                         2'd0: PRDATA <= slv_reg0;
                         2'd1: PRDATA <= slv_reg1;
-                        //2'd2: PRDATA <= slv_reg2;
-                        // 2'd3: PRDATA <= slv_reg3;
+                        2'd2: PRDATA <= slv_reg2;
+                        2'd3: PRDATA <= slv_reg3;
                     endcase
                 end
             end else begin
@@ -89,6 +97,8 @@ module timer (
     input  logic        reset,
     input  logic        en,
     input  logic        clear,
+    input  logic [31:0] psc,
+    input  logic [31:0] arr,
     output logic [31:0] counter
 );
     logic tick;
@@ -101,15 +111,14 @@ endmodule
 
 
 module clk_div (
-    input  logic clk,
-    input  logic reset,
-    input  logic en,
-    input  logic clear,
+    input logic clk,
+    input logic reset,
+    input logic en,
+    input logic clear,
+    input logic [31:0] psc,
     output logic tick
 );
-    localparam FCOUNT = 100_000;
-
-    logic [$clog2(FCOUNT)-1:0] count_reg, count_next;
+    logic [31:0] count_reg, count_next;
     logic tick_reg, tick_next;
 
     assign tick = tick_reg;
@@ -128,7 +137,7 @@ module clk_div (
         count_next = count_reg;
         tick_next  = 1'b0;
         if (en) begin
-            if (count_reg == FCOUNT - 1) begin
+            if (count_reg == psc - 1) begin
                 count_next = 0;
                 tick_next  = 1'b1;
             end else begin
@@ -146,6 +155,7 @@ module counter (
     input  logic        reset,
     input  logic        clear,
     input  logic        tick,
+    input  logic [31:0] arr,
     output logic [31:0] counter
 );
 
@@ -153,7 +163,11 @@ module counter (
         if (reset) begin
             counter <= 0;
         end else if (tick) begin
-            counter <= counter + 1;
+            if (counter == arr) begin
+                counter <= 0;
+            end else begin
+                counter <= counter + 1;
+            end
         end else if (clear) begin
             counter <= 0;
         end

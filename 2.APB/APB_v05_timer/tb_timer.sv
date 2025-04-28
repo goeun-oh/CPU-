@@ -3,7 +3,7 @@
 module tb_timer();
     logic clk, en, reset, clear;
 
-    logic [31:0] counter;
+    logic [31:0] counter, psc, arr;
 
     always #5 clk = ~clk;
     initial begin
@@ -12,6 +12,9 @@ module tb_timer();
         reset=1;
         #5;
         reset=0;
+        #5;
+        psc = 1000;
+        arr = 50;
     end
     timer U_TIMER (.*);
 endmodule
