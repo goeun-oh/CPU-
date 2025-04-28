@@ -14,16 +14,25 @@ module APB_Master (
     output logic        PSEL2,
     output logic        PSEL3,
     output logic        PSEL4,
+    output logic        PSEL5,
+    output logic        PSEL6,
+    output logic        PSEL7,
     input  logic [31:0] PRDATA0,
     input  logic [31:0] PRDATA1,
     input  logic [31:0] PRDATA2,
     input  logic [31:0] PRDATA3,
     input  logic [31:0] PRDATA4,
+    input  logic [31:0] PRDATA5,
+    input  logic [31:0] PRDATA6,
+    input  logic [31:0] PRDATA7,
     input  logic        PREADY0,
     input  logic        PREADY1,
     input  logic        PREADY2,
     input  logic        PREADY3,
     input  logic        PREADY4,
+    input  logic        PREADY5,
+    input  logic        PREADY6,
+    input  logic        PREADY7,
     // Internal Interface Signals
     input  logic        transfer,  // trigger signal
     output logic        ready,
@@ -43,6 +52,9 @@ module APB_Master (
     assign PSEL2 = pselx[2];
     assign PSEL3 = pselx[3];
     assign PSEL4 = pselx[4];
+    assign PSEL5 = pselx[5];
+    assign PSEL6 = pselx[6];
+    assign PSEL7 = pselx[7];
 
     typedef enum bit [1:0] {
         IDLE,
@@ -128,11 +140,17 @@ module APB_Master (
         .d2   (PRDATA2),
         .d3   (PRDATA3),
         .d4   (PRDATA4),
+        .d5   (PRDATA5),
+        .d6   (PRDATA6),
+        .d7   (PRDATA7),
         .r0   (PREADY0),
         .r1   (PREADY1),
         .r2   (PREADY2),
         .r3   (PREADY3),
         .r4   (PREADY4),
+        .r5   (PREADY5),
+        .r6   (PREADY6),
+        .r7   (PREADY7),
         .rdata(rdata),
         .ready(ready)
     );
@@ -141,17 +159,20 @@ endmodule
 module APB_Decoder (
     input  logic        en,
     input  logic [31:0] sel,
-    output logic [ 4:0] y
+    output logic [ 7:0] y
 );
     always_comb begin
-        y = 5'b0;
+        y = 8'b0;
         if (en) begin
             casex (sel)
-                32'h1000_0xxx: y = 5'b00001;
-                32'h1000_1xxx: y = 5'b00010;
-                32'h1000_2xxx: y = 5'b00100;
-                32'h1000_3xxx: y = 5'b01000;
-                32'h1000_4xxx: y = 5'b10000;
+                32'h1000_0xxx: y = 8'b00000001;
+                32'h1000_1xxx: y = 8'b00000010;
+                32'h1000_2xxx: y = 8'b00000100;
+                32'h1000_3xxx: y = 8'b00001000;
+                32'h1000_4xxx: y = 8'b00010000;
+                32'h1000_5xxx: y = 8'b00100000;
+                32'h1000_6xxx: y = 8'b01000000;
+                32'h1000_7xxx: y = 8'b10000000;
             endcase
         end
     end
@@ -164,11 +185,17 @@ module APB_Mux (
     input  logic [31:0] d2,
     input  logic [31:0] d3,
     input  logic [31:0] d4,
+    input  logic [31:0] d5,
+    input  logic [31:0] d6,
+    input  logic [31:0] d7,
     input  logic        r0,
     input  logic        r1,
     input  logic        r2,
     input  logic        r3,
     input  logic        r4,
+    input  logic        r5,
+    input  logic        r6,
+    input  logic        r7,
     output logic [31:0] rdata,
     output logic        ready
 );
@@ -181,6 +208,9 @@ module APB_Mux (
             32'h1000_2xxx: rdata = d2;
             32'h1000_3xxx: rdata = d3;
             32'h1000_4xxx: rdata = d4;
+            32'h1000_5xxx: rdata = d5;
+            32'h1000_6xxx: rdata = d6;
+            32'h1000_7xxx: rdata = d7;
         endcase
     end
 
@@ -192,6 +222,9 @@ module APB_Mux (
             32'h1000_2xxx: ready = r2;
             32'h1000_3xxx: ready = r3;
             32'h1000_4xxx: ready = r4;
+            32'h1000_5xxx: ready = r5;
+            32'h1000_6xxx: ready = r6;
+            32'h1000_7xxx: ready = r7;
         endcase
     end
 endmodule

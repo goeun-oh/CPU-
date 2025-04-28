@@ -19,16 +19,19 @@ module MCU (
     logic        PSEL_GPI;
     logic        PSEL_GPIOC;
     logic        PSEL_FND;
+    logic        PSEL_TIMER;
     logic [31:0] PRDATA_RAM;
     logic [31:0] PRDATA_GPO;
     logic [31:0] PRDATA_GPI;
     logic [31:0] PRDATA_GPIOC;
     logic [31:0] PRDATA_FND;
+    logic [31:0] PRDATA_TIMER;
     logic        PREADY_RAM;
     logic        PREADY_GPO;
     logic        PREADY_GPI;
     logic        PREADY_GPIOC;
     logic        PREADY_FND;  
+    logic        PREADY_TIMER;  
 
     // CPU - APB_Master Signals
     // Internal Interface Signals  
@@ -68,16 +71,25 @@ module MCU (
         .PSEL2  (PSEL_GPI),
         .PSEL3  (PSEL_GPIOC),
         .PSEL4  (PSEL_FND),
+        .PSEL5  (),
+        .PSEL6  (PSEL_TIMER),
+        .PSEL7  (),
         .PRDATA0(PRDATA_RAM),
         .PRDATA1(PRDATA_GPO),
         .PRDATA2(PRDATA_GPI),
         .PRDATA3(PRDATA_GPIOC),
         .PRDATA4(PRDATA_FND),
+        .PRDATA5(),
+        .PRDATA6(PRDATA_TIMER),
+        .PRDATA7(),
         .PREADY0(PREADY_RAM),
         .PREADY1(PREADY_GPO),
         .PREADY2(PREADY_GPI),
         .PREADY3(PREADY_GPIOC),
-        .PREADY4(PREADY_FND)
+        .PREADY4(PREADY_FND),
+        .PREADY5(),
+        .PREADY6(PREADY_TIMER),
+        .PREADY7()
     );    
   
     ram U_RAM (
@@ -121,5 +133,12 @@ module MCU (
         .PREADY(PREADY_FND),
         .fndComm(fndComm),  
         .fndFont(fndFont)  
+    );
+
+    timer_Periph U_timer_Periph(
+        .*,
+        .PSEL(PSEL_TIMER),
+        .PRDATA(PRDATA_TIMER),
+        .PREADY(PREADY_TIMER)
     );
 endmodule

@@ -53,3 +53,7 @@ PSC, APR reg를 추가해보자!
 ![](image.png)
 
 - PSC(pre-scaler) 주파수를 정해주는 역할
+
+
+현재까지 메모리 매핑
+![](mem_map.png)

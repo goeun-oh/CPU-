@@ -14,7 +14,8 @@ module timer_Periph (
     output logic        PREADY
 );
 
-    logic [31:0] TCR;
+    logic en;
+    logic clear;
     logic [31:0] TCNT;
     logic [31:0] PSC;
     logic [31:0] ARR;
@@ -22,10 +23,9 @@ module timer_Periph (
     timer_SlaveIntf U_timer_Intf (.*);
 
     timer U_timer (
+        .*,
         .clk    (PCLK),
         .reset  (PRESET),
-        .en     (TCR[0]),
-        .clear  (TCR[1]),
         .psc    (PSC),
         .arr    (ARR),
         .counter(TCNT)
@@ -45,7 +45,8 @@ module timer_SlaveIntf (
     output logic [31:0] PRDATA,
     output logic        PREADY,
     // internal signals
-    output logic [31:0] TCR,
+    output logic en,
+    output logic clear,
     output logic [31:0] TCNT,
     output logic [31:0] PSC,
     output logic [31:0] ARR
@@ -53,7 +54,8 @@ module timer_SlaveIntf (
     logic [31:0] slv_reg0, slv_reg1, slv_reg2, slv_reg3;
 
 
-    assign TCR  = slv_reg0;
+    assign en  = slv_reg0[0];
+    assign clear = slv_reg0[1];
     assign TCNT = slv_reg1;
     assign PSC  = slv_reg2;
     assign ARR  = slv_reg3;
@@ -62,7 +64,7 @@ module timer_SlaveIntf (
     always_ff @(posedge PCLK, posedge PRESET) begin
         if (PRESET) begin
             slv_reg0 <= 0;
-            slv_reg1 <= 0;
+            //slv_reg1 <= 0;
             slv_reg2 <= 0;
             slv_reg3 <= 0;
         end else begin
@@ -71,7 +73,7 @@ module timer_SlaveIntf (
                 if (PWRITE) begin
                     case (PADDR[3:2])
                         2'd0: slv_reg0 <= PWDATA;
-                        2'd1: slv_reg1 <= PWDATA;
+                        2'd1:; //slv_reg1 <= PWDATA;
                         2'd2: slv_reg2 <= PWDATA;
                         2'd3: slv_reg3 <= PWDATA;
                     endcase
