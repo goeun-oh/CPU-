@@ -139,7 +139,7 @@ module clk_div (
         count_next = count_reg;
         tick_next  = 1'b0;
         if (en) begin
-            if (count_reg == psc - 1) begin
+            if (count_reg == psc) begin
                 count_next = 0;
                 tick_next  = 1'b1;
             end else begin
@@ -168,10 +168,10 @@ module counter (
             if (counter == arr) begin
                 counter <= 0;
             end else begin
-                if (clear)  counter <=0;
-                else counter <= counter + 1;
-            end
-        end 
-    end
+                counter <= counter + 1;
+            end if (clear)  counter <=0;
+        end
+    end 
+
 
 endmodule
