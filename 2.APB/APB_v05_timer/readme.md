@@ -57,3 +57,27 @@ PSC, APR reg를 추가해보자!
 
 현재까지 메모리 매핑
 ![](mem_map.png)
+
+
+
+-----
+complier
+LED0 LED1 LED2 LED3
+
+- POWER LED
+0.5 on/ 0.5 off blinking
+
+- Button 1 을 누를 시 LED 1번만 Blink (LED 2,3 은 off)
+func1 에 대한 LED 동작
+0.2 on/ 0.2 off blinking
+
+- Button 2 누를 시 LED 2번만 Blink (LED 1,3은 off)
+func2 에 대한 LED 동작
+0.5 on/ 0.5 off blinking
+
+- Button 3 누를 시 LED 3번만 Blink (LED 1,2은 off)
+func3에 대한 LED 동작
+1 on/ 1 off blinking
+
+- Button 4 누를 시 LED 1, 2, 3 Blink
+1.5 on/ 1.5 off blinking
