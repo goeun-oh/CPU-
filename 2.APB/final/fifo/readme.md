@@ -30,5 +30,86 @@ RAM 에 저장된 data를 write or read 하기 위해
 
 각 상태 별로 `wtpr` `rptr` `empty` `full` 을 정의하고 RAM 에 연결한다.
 
-### 2. FIFO systemVerilog simulation
+## 2. FIFO systemVerilog simulation
+![](image.png)
 
+### interface 모듈 구성
+![](image-1.png)
+clk에 딱 맞춰서 data가 변경된다면 data 값이 변경 전 data인지 변경 후 data인지 애매할 때가 있다. (따라서 보통 표준 timing diagram을 보면 clk에 맞춰서 data를 변경시키지 않고 약간의 delay 후 data가 변경되도록 그린다)
+
+**system verilog 에서 delay를 주는 방법**
+clocking block, modport 사용
+
+- modport
+DUT에서는 `input`, `output` 방향이 명확하지만,
+interface로 묶으면 신호들이 전부 다 `logic`이 되어 방향이 사라지게됨
+
+> modport를 이용하여 `input`, `output`을 구분하여 interface에 접근하는 방향을 명시적으로 구분할 수 있음
+
+- clocking block
+특정 clk event에 동기화되며, 입출력 신호에 대해 skew를 정의할 수 있음
+(race condition 방지 가능)
+
+
+**다음과 같이 clocking block과 modport를 함께 사용하는 것이 일반적이다**
+```systemVerilog
+    interface fifo_interface (
+        input logic clk,
+        input logic reset
+    );
+    ....
+    ....
+    //driver용 clocking block
+    clocking drv_cb @(posedge clk); 
+        default input #1 output #1;
+        // write side
+        output wdata;
+        output wr_en;
+        input full;
+        // read side
+        input rdata;
+        output rd_en;
+        input empty;
+    endclocking
+
+    //monitor용 clocking block
+    clocking mon_cb @(posedge clk); 
+        default input #1 output #1;
+        // write side
+        input wdata;
+        input wr_en;
+        input full;
+        // read side
+        input rdata;
+        input rd_en;
+        input empty;
+    endclocking
+
+    modport drv_mport(clocking drv_cb, input reset);
+    modport mon_mport(clocking mon_cb, input reset);
+
+```
+만일 clocking block 만 사용했을 경우 clocking  모듈 안에 정의된 in/output 신호들은 clocking block 안에서만 적용되므로, 다른 class에서 interface를 불러오고 clocking block의 output에 write하는 것이 가능하다.
+
+```systemVerilog
+    modport drv_mport(clocking drv_cb, input reset);
+```
+이런식으로 modport와 함께 사용하면 `clk`을 기준으로 input output에 skew를 줄 수 있고, clocking block에 정의된 signal의 방향이 그 modport의 signal direction(ex) driver, monitor)의 direction이 된다.
+
+
+**interface에서 괄호 안에 정의한 신호와 밖의 신호들의 차이?**
+
+```systemVerilog
+interface fifo_interface (
+    input logic clk,
+    input logic reset
+);
+    // write side
+    logic [7:0] wdata;
+    logic       wr_en;
+    logic       full;
+```
+
+- 괄호 안에 잇는 신호들은 interface를 인스턴스화할 때 전달받는 외부 입력 (testbench의 initial 값들을 넘겨 받는 것)
+
+- 괄호 밖에 선언들은 interface와 DUT간에 연결되는 I/O 신호들
