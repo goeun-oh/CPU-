@@ -14,7 +14,7 @@ class transaction;
     endtask  //display
 endclass
 
-interface fifo_interface(
+interface fifo_interface (
     input logic clk,
     input logic reset
 );
@@ -104,8 +104,12 @@ class scoreboard;
     mailbox #(transaction) Mon2SCB_mbox;
     transaction fifo_tr;
     event gen_next_event;
-    function new(mailbox #(transaction) Mon2SCB_mbox, event gen_next_event);
-        this.Mon2SCB_mbox = Mon2SCB_mbox;
+
+    logic [7:0] scb_fifo[$];  //동적 큐 선언
+    logic [7:0] pop_data;
+
+    function new(mailbox#(transaction) Mon2SCB_mbox, event gen_next_event);
+        this.Mon2SCB_mbox   = Mon2SCB_mbox;
         this.gen_next_event = gen_next_event;
     endfunction
 
@@ -113,6 +117,28 @@ class scoreboard;
         forever begin
             Mon2SCB_mbox.get(fifo_tr);
             fifo_tr.display("SCB");
+            if (fifo_tr.we) begin
+                if (!fifo_tr.full) begin
+                    scb_fifo.push_back(
+                        fifo_tr.wdata);  // 큐 맨 뒤에 값 추가
+                    $display("[SCB] : Data Stored in queue : %h\n",
+                             fifo_tr.wdata, scb_fifo);
+                end else begin
+                    $display("[SCB]: FIFO is full, %p\n", scb_fifo);
+                end
+            end
+            if(fifo_tr.re) begin
+                if(!fifo_tr.empty) begin
+                    pop_data = scb_fifo.pop_front();
+                    if(fifo_tr.rdata == pop_data) begin
+                        $display("[SCB] data matched %h == %h\n", fifo_tr.rdata, pop_data);
+                    end else begin
+                        $display("[SCB] data dismatched %h != %h\n", fifo_tr.rdata, pop_data);
+                    end
+                end else begin
+                    $display("[SCB] fifo is empty, %p\n", scb_fifo);
+                end
+            end
             ->gen_next_event;
         end
     endtask
@@ -129,7 +155,7 @@ class envirnment;
     monitor fifo_mon;
     scoreboard fifo_scb;
 
-    function new(virtual fifo_intferface fifo_intf);
+    function new(virtual fifo_interface fifo_intf);
         Gen2Drv_mbox = new();
         Mon2SCB_mbox = new();
         fifo_gen = new(Gen2Drv_mbox, gen_next_event);
@@ -146,13 +172,13 @@ class envirnment;
             fifo_scb.run();
         join_any
     endtask
-
 endclass
 
 module tb_fifo ();
     logic clk, reset;
 
     envirnment fifo_env;
+
     fifo_interface fifo_intf (
         clk,
         reset
@@ -169,7 +195,6 @@ module tb_fifo ();
         fifo_env.run(10);
         #30 $display("finish!");
         $finish;
-
     end
 
     fifo u_fifo (
