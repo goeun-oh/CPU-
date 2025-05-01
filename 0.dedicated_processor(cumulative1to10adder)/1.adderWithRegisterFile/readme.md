@@ -15,7 +15,7 @@
 ```
 
 ### 코드
-*** simulation 시 String 값으로 출력할 수 있는 code ***
+**simulation 시 String 값으로 출력할 수 있는 code**
 
 ```verilog
     typedef enum { S0, S1, S2, S3, S5, S6, S7} state_e;
