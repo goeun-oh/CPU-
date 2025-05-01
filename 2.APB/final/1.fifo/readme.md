@@ -232,7 +232,9 @@ class monitor;
 ```
 
 왜 `@(fifo_intf.mon_cb);` 이렇게 2번이나 clk posedge 를 wait할까?
+
 ![](output.png)
 
-![](pic.png>)
+![](pic.png)
+
 ram이 flip flop 으로 동작하고, input 신호가 skew 되어 들어오기 때문에 최소 2clk 뒤에 신호를 받는 것이 안정적이다.
