@@ -52,6 +52,6 @@ ready가 1일때 cpu가 해당 rdata를 읽는다
 
 ### APB Slave (peripheral)
 ![](ApbSlaveModel.png)
-peripheral에 Register Map memory가 있다 (0x00~0x0c) 
+peripheral에 Register Map memory가 있다 '(0x00~0x0c)'   
 -> 따라서 paddr은 4bit(0~15)로 설정
 
