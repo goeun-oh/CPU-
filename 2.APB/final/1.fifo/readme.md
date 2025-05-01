@@ -204,6 +204,7 @@ a dist { 1:/80, 0:/20 };
 
 
 ### Monitor 구성
+
 ```systemVerilog
 class monitor;
     mailbox #(transaction) Mon2SCB_mbox;
