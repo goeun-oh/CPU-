@@ -5,7 +5,6 @@
 ### block diagram
 ![](blockdiagram.png)
 
-
 - read는 combinational logic으로 ra1, ra2의 주소의 데이터 값 (rd1, rd2)를 항상 read하는 상태
 - we가 1이 되면 writeAddr 주소에 wData로 들어오는 값을 write함
 - outReg는 rd1을 d(입력) 으로 받으며 outBuf(en)이 1이 될 때 outPort로 d 값을 넘김
