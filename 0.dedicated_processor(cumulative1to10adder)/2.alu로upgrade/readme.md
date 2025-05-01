@@ -3,7 +3,6 @@
 > 더욱 더 CPU에 근접하게 되었음
 
 ### block diagram
-
 ![](blockdiagram.png)
 
 
