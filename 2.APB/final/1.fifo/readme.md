@@ -21,7 +21,7 @@ RAM 에 저장된 data를 write or read 하기 위해
 - write, read pointer가 필요 (`wptr`, `rptr`)
 - 메모리 공간이 가득 찼는지/ 비었는지 알려주는 control 신호 필요 (`empty`, `full`)
 
-**상태**
+**상태**  
 상태는 다음과 같은 3가지 상태가 존재
 
 - Read 만 수행
