@@ -179,10 +179,12 @@ var dist { value1 :/ weight1, value2 :/ weight2, ... };
 
 <details>
 <summary> 예시</summary>
+
 ```systemVerilog
 a dist { 1:/80, 0:/20 };
 ```
 1이 80% 확률, 0이 20%로 확률로 랜덤 생성된다는 의미
+
 </details>
 
 ### driver 구성
