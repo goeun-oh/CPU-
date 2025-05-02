@@ -58,6 +58,8 @@ void FND_dotData(FND_TypeDef *fnd, uint32_t data);
 uint32_t FIFO_RX_writeCheck(FIFO_TypeDef *fifo);
 uint32_t FIFO_TX_writeCheck(FIFO_TypeDef *fifo);
 void FIFO_writeData(FIFO_TypeDef *fifo);
+void FIFO_writeData2(FIFO_TypeDef *fifo, uint32_t data);
+
 uint32_t FIFO_readData(FIFO_TypeDef *fifo);
 
 int main()
@@ -67,11 +69,13 @@ int main()
     while(1){
     //받은거 read
     //fsr_TX[1]이 full이 아니면
-        if(((FIFO_RX_writeCheck(FIFO) & (one))) ==0){
-            FIFO_writeData(FIFO);
+        if(((FIFO_RX_writeCheck(FIFO) & (one)) || (FIFO_TX_writeCheck(FIFO) & (one <<1)) ) ==0){
+            for (int i=0; i<5 ;i++){
+                FIFO_writeData2(FIFO, i);
+            }
         }
 
-        if((FIFO_TX_writeCheck(FIFO) & (one <<1)) == 0){
+        if((FIFO_RX_writeCheck(FIFO) & (one)) == 0){
             FIFO_readData(FIFO);
         }
 
@@ -92,6 +96,11 @@ uint32_t FIFO_TX_writeCheck(FIFO_TypeDef *fifo)
 void FIFO_writeData(FIFO_TypeDef *fifo)
 {
     fifo->FWD = fifo -> FRD;
+}
+
+void FIFO_writeData2(FIFO_TypeDef *fifo, uint32_t data)
+{
+    fifo->FWD = data;
 }
 uint32_t FIFO_readData(FIFO_TypeDef *fifo)
 {

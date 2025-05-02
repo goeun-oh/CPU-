@@ -21,7 +21,7 @@ module MCU (
     logic        PWRITE;
     logic        PENABLE;
     logic        PSEL_RAM;
-    logic        PSEL_GPO;  
+    logic        PSEL_GPO;    
     logic        PSEL_GPI;
     logic        PSEL_GPIOC;
     logic        PSEL_GPIOD;  
@@ -105,7 +105,7 @@ module MCU (
     );
 
     ram U_RAM (
-        .*,
+        .*,  
         .PSEL  (PSEL_RAM),
         .PRDATA(PRDATA_RAM),
         .PREADY(PREADY_RAM)

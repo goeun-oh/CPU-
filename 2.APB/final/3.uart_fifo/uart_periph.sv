@@ -113,7 +113,8 @@ module uart_SlaveIntf (
     typedef enum {
         IDLE,
         READ,
-        WRITE
+        WRITE,
+        HOLD
     } state_e;
 
     state_e state_reg, state_next;
@@ -202,13 +203,19 @@ module uart_SlaveIntf (
                 re_next = 1'b0;
                 we_next = 1'b0;
                 PREADY_next = 1'b0;
-                state_next = IDLE; 
+                state_next = HOLD; 
             end
             WRITE: begin
                 we_next =1'b0;
                 re_next = 1'b0;
-                state_next = IDLE;
+                state_next = HOLD;
                 PREADY_next = 1'b0;
+            end
+            HOLD: begin
+                we_next =1'b0;
+                re_next = 1'b0;
+                state_next = IDLE;
+                PREADY_next = 1'b0; 
             end
         endcase
     end
