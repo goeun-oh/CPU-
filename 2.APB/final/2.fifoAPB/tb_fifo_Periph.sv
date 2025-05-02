@@ -101,18 +101,9 @@ module fifo_Periph_tb;
     // 3. 데이터 0xBB 쓰기
     apb_write(4'h4, 32'h000000BB);
     $display("[WRITE] FWD <= 0xBB");
-
-    // 4. 첫 번째 데이터 읽기 요청 트리거 (read enable)
-    apb_read(4'h4, rdata);  // trigger read
-    $display("[TRIGGER] Read FIFO");
-
     // 5. 실제 데이터 읽기
     apb_read(4'h8, rdata);  // FRD 레지스터
     $display("[READ] FRD = 0x%0h", rdata[7:0]);
-
-    // 6. 두 번째 데이터 읽기 요청 트리거
-    apb_read(4'h4, rdata);
-    $display("[TRIGGER] Read FIFO");
 
     // 7. 두 번째 데이터 읽기
     apb_read(4'h8, rdata);

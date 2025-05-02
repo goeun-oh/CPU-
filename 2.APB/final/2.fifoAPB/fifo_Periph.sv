@@ -14,23 +14,23 @@ module fifo_Periph (
     output logic        PREADY
 );
 
-    logic [1:0] FSR;  //state register
-    logic [7:0] FWD;
-    logic [7:0] FRD;
 
     logic empty, full;
     logic we, re;
+    logic [7:0] wdata, rdata;
 
-    fifo_SlaveIntf U_fifo_Intf (.*);
+
+    fifo_SlaveIntf U_fifo_Intf (
+        .*,
+        .FSR({full, empty}),
+        .FWD(wdata),
+        .FRD(rdata)
+        );
 
     fifo U_fifo (
         .*,
         .clk  (PCLK),
-        .reset(PRESET),
-        .empty(FSR[0]),
-        .full (FSR[1]),
-        .wdata(FWD),
-        .rdata(FRD)
+        .reset(PRESET)
     );
 endmodule
 
@@ -58,7 +58,7 @@ module fifo_SlaveIntf (
 
     logic we_reg, we_next;
     logic re_reg, re_next;
-    logic PRDATA_reg, PRDATA_next;
+    logic [31:0] PRDATA_reg, PRDATA_next;
     logic PREADY_reg, PREADY_next;
 
     assign we = we_reg;
@@ -80,6 +80,8 @@ module fifo_SlaveIntf (
 
     always_ff @(posedge PCLK, posedge PRESET) begin
         if (PRESET) begin
+            slv_reg0[31:2] <=0;
+            slv_reg2[31:8] <=0;
             slv_reg1  <= 0;
             state_reg <= IDLE;
             we_reg    <= 0;
@@ -109,27 +111,33 @@ module fifo_SlaveIntf (
                 PREADY_next = 1'b0;
                 if (PSEL && PENABLE) begin
                     if (PWRITE) begin
+                        state_next= WRITE;
+                        we_next = 1'b1;
+                        re_next = 1'b0;
+                        PREADY_next = 1'b1;
                         case (PADDR[3:2])
                             2'd0: ;
                             2'd1: begin
                                 slv_reg1_next = PWDATA;
-                                state_next = WRITE;
-                                we_next = 1'b1;
-                                PREADY_next = 1'b1;
                             end
                             2'd2: ;
                         endcase
                     end else begin
-                        PRDATA_next = 32'bx;
+                        state_next= READ;
+                        PREADY_next = 1'b1;
+                        we_next = 1'b0;
                         case (PADDR[3:2])
                             2'd0: begin
                                 PRDATA_next = slv_reg0;
-                                PREADY_next = 1'b1;
+                                re_next = 1'b0;
                             end
-                            2'd1: PREADY_next=1'b0;
+                            2'd1: begin
+                                PRDATA_next = slv_reg1;
+                                re_next = 1'b0;
+                            end
                             2'd2: begin
                                 PRDATA_next = slv_reg2;
-                                PREADY_next = 1'b1;
+                                re_next = 1'b1;
                             end
                         endcase
                     end
@@ -138,22 +146,15 @@ module fifo_SlaveIntf (
 
             READ: begin
                 re_next = 1'b0;
-                PREADY_next = 1'b1;
+                we_next = 1'b0;
+                PREADY_next = 1'b0;
                 state_next = IDLE; 
-                PRDATA_next = 32'bx;
-                case (PADDR[3:2])
-                    2'd0: ;
-                    2'd1: begin
-                        PRDATA_next = slv_reg1;
-                    end
-                    2'd2: ;
-                endcase
             end
             WRITE: begin
                 we_next =1'b0;
+                re_next = 1'b0;
                 state_next = IDLE;
                 PREADY_next = 1'b0;
-
             end
         endcase
     end
