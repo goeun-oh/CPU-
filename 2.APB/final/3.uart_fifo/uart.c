@@ -63,16 +63,22 @@ uint32_t FIFO_readData(FIFO_TypeDef *fifo);
 int main()
 {   
     uint32_t one = 1;
+    uint32_t write =0;
+    uint32_t read =0;
 
     while(1){
     //받은거 read
     //fsr_TX[1]이 full이 아니면
         if(((FIFO_RX_writeCheck(FIFO) & (one))) ==0){
             FIFO_writeData(FIFO);
+            write = 0x01;
         }
 
         if((FIFO_TX_writeCheck(FIFO) & (one <<1)) == 0){
-            FIFO_readData(FIFO);
+            if (write & (one <<0)){
+                FIFO_readData(FIFO);
+                write =0x00;
+            }
         }
 
     }

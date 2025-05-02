@@ -108,7 +108,7 @@ module MCU (
         .*,  
         .PSEL  (PSEL_RAM),
         .PRDATA(PRDATA_RAM),
-        .PREADY(PREADY_RAM)
+        .PREADY(PREADY_RAM)  
     );
 
     // GPO_Periph U_GPOA (

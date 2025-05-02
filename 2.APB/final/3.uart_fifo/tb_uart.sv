@@ -102,6 +102,13 @@ module uart_Periph_tb;
 
     $display("=== UART Testbench 시작 ===");
 
+    // TX FIFO에 데이터 쓰기 (0xA5)
+    apb_write(4'h8, 32'h000000A5);
+    $display("[APB] Wrote 0xA5 to TX FIFO");
+
+    // TX 전송 기다림
+    #(BIT_TIME * 12);
+
     // RX 경로로 0x3C 전송
     uart_send_byte(8'h3C);
     $display("[UART] Sent byte 0x3C to rx");
