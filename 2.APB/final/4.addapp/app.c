@@ -122,7 +122,6 @@ uint32_t TIM_readCount(TIM_TypeDef *tim);
 void TIM_writePrescaler(TIM_TypeDef *tim, uint32_t psc);
 void TIM_writeAutoReload(TIM_TypeDef *tim, uint32_t arr);
 void TIM_clear(TIM_TypeDef *tim);
-void setTimer(TIM_TypeDef *tim, uint32_t arr);
 
 
 // UART 제어 함수
@@ -132,7 +131,10 @@ uint32_t UART_isLoop(UART_TypeDef *uart);
 void UART_WriteLoopData(UART_TypeDef *uart);
 void UART_WriteSensorData(UART_TypeDef *uart, uint32_t *sensorData);
 uint32_t UART_readData(UART_TypeDef *uart);
-void UART_RUN(UART_TypeDef *uart, uint32_t *write, uint32_t *us_dist, uint32_t *setTim, uint32_t *arr);
+void UART_RUN(UART_TypeDef *uart, uint32_t *write, uint32_t *us_dist, uint32_t *prevTime, uint32_t *arr, uint32_t *flag, uint32_t *go_unloopmode);
+uint32_t UART_ReceiveARR(UART_TypeDef *uart);
+uint32_t UART_readSensorData(UART_TypeDef *uart);
+void writeSensorData(uint32_t *prevTime, uint32_t *data, uint32_t *arr);
 
 // 초음파 제어 함수
 void US_start(US_TypeDef *USx, uint32_t data);
@@ -168,34 +170,32 @@ int main()
     uint32_t dht_h = 0;   // 온습도 습도 측정값
     uint32_t dht_c = 0;   // 온습도 체크섬 측정값
 
+    uint32_t prevTime =0;
     uint32_t write =0;
     uint32_t setTim =0;
     uint32_t arr =0;
-    uint32_t us_autoMeasure = 0;
     uint32_t dht_autoMeasure =0;
+    uint32_t validUS=0;
+    uint32_t flag =0;
+    uint32_t go_unloopmode =0;
 
     UART_SetLoop(UART, 0x01);
+    TIM_writePrescaler(TIM, 100000 - 1);
+    TIM_writeAutoReload(TIM, 0xFFFFFFFF);
+    TIM_start(TIM);
 
     while(1){
         temp_sw = sw_read(GPIB);
 
         uint32_t sw0_US_or_DHT = temp_sw & (1<<0); // FND 출력 선택을 위한 SW
         uint32_t sw1_DHT_Choose = temp_sw & (1<<1); // FND 출력 선택을 위한 SW
+
+
+        us_dist = us_measure(&validUS);  // 초음파 측정 함수
         
-        us_dist = us_measure(&us_autoMeasure);  // 초음파 측정 함수
         dht_measure(&dht_autoMeasure, &dht_t, &dht_h, &dht_c); // 온습도 측정 함수
   
-        UART_RUN(UART, &write, &us_dist, &setTim, &arr);
-        if(!(UART_isLoop(UART) && (1 <<0))) {
-            if(setTim) setTimer(TIM, arr);
-            else{
-                if((arr == TIM_readCount(TIM)) && (arr !=0x00)){
-                    us_autoMeasure = 0x01;
-                }else{
-                    us_autoMeasure = 0x00;
-                }
-            }
-        }
+        UART_RUN(UART, &write, &us_dist, &prevTime, &arr, &flag, &go_unloopmode);
 
         // FND 출력 파트
         if (!sw0_US_or_DHT){   // SW0 == 0 (FND 초음파 출력)
@@ -332,12 +332,16 @@ void TIM_clear(TIM_TypeDef *tim) {
    tim->TCR |= (1 << 1);
    tim->TCR &= ~(1 << 1);
 }
+// func4: 1500 카운트 주기로 LED 4번 토글
+void writeSensorData(uint32_t *prevTime, uint32_t *data, uint32_t *arr) {
+    uint32_t curTime = TIM_readCount(TIM);
 
+    if (curTime - *prevTime < *arr){
+        return;
+    } 
+    *prevTime = curTime;
 
-void setTimer(TIM_TypeDef *tim, uint32_t arr){
-    TIM_writePrescaler(tim, 100000);
-    TIM_writeAutoReload(tim, arr);
-    TIM_start(tim);
+    UART_WriteSensorData(UART, data);
 }
 
 
@@ -349,12 +353,12 @@ uint32_t getPrescale(UART_TypeDef *uart){
  * UART FIFO 함수
  ********************************************************/
 //UART 동작
-void UART_RUN(UART_TypeDef *uart, uint32_t *write, uint32_t *us_dist, uint32_t *setTIM, uint32_t *arr){
+void UART_RUN(UART_TypeDef *uart, uint32_t *write, uint32_t *us_dist, uint32_t *prevTime, uint32_t *arr, uint32_t *flag, uint32_t *go_unloopmode){
     uint32_t one = 1;
     uint32_t rbyte=0;
     uint32_t is_loop;
+
     is_loop = UART_isLoop(uart);
-    *setTIM =0x00;
 
     /******loop 일 때************
      * we: FIFO RX가 empty가 아닐때 그 FIFO RX 에 담긴 값을 write
@@ -366,29 +370,44 @@ void UART_RUN(UART_TypeDef *uart, uint32_t *write, uint32_t *us_dist, uint32_t *
             *write = 0x01;
         }
 
-        if((UART_writeCheck(uart) & (one <<1)) == 0){
+        // FIFO RX not empty일 때 문자 하나 수신
+        if((UART_writeCheck(uart) & (one <<1)) == 0 && *flag ==0){
             if (*write & (one <<0)){
                 rbyte = UART_readData(uart);
                 if(rbyte == 0x58){ 
-                    UART_SetLoop(uart, 0x00);
-                    delay(1000);
-                    *arr=getPrescale(uart);
-                    *setTIM = 0x01;                    
+                    *flag = 1;
                 }
-                *write =0x00;
+                *write = 0x00;
             }
         }
+
+        if((UART_writeCheck(uart) &(one<<1) ==0) && *flag & (1 <<0)){
+            rbyte = UART_readData(uart);
+            *write =0x00;
+            if(rbyte >= '0' && rbyte <= '9'){
+                *arr = rbyte *1000;
+                *flag =0;
+                *go_unloopmode = 0x01;
+            }
+        }
+        if(*go_unloopmode & (1<<0)){
+            UART_SetLoop(uart, 0x00);
+            delay(100);
+            *go_unloopmode = 0x00;
+        }
+        
     } else {
     /******loop가 아닐 때************
-     * we: FIFO TX가 empty가 아닐때 그 FIFO TX 에 담긴 값을 write
+     * we: FIFO TX가 full이 아닐때 그 FIFO TX 에 담긴 값을 write
      * re: FIFO RX가 empty가 아닐때 그 FIFO RX 에 담긴 값을 read
      */
+
         if(((UART_writeCheck(uart) & (one << 1))) ==0){
-            UART_WriteSensorData(uart, us_dist);
+            writeSensorData(prevTime, us_dist, arr);
             *write = 0x01;
         }
 
-        if((UART_writeCheck(uart) & (one)) == 0){
+        if(((UART_writeCheck(uart) & (one)) == 0) ){
             if (*write & (one <<0)){
                 rbyte = UART_readData(uart);
                 if(rbyte == 0x58) {
@@ -435,6 +454,21 @@ uint32_t UART_readData(UART_TypeDef *uart)
     return uart -> URD;
 }
 
+uint32_t UART_readSensorData(UART_TypeDef *uart)
+{
+    return uart -> UWD;
+}
+
+uint32_t UART_ReceiveARR(UART_TypeDef *uart) {
+    uint32_t temp=0;
+    uint32_t result =0;
+
+    while(UART_writeCheck(uart) & (1<<1) == 0){
+        temp = UART_readData(uart);
+        result = result * 10 + (temp);
+    }
+    return result;
+}
 
 /********************************************************
  * 초음파 센서 함수
@@ -455,8 +489,8 @@ uint32_t US_check_vaild(US_TypeDef *USx) {
     return USx->USR;
 }
 
-/********************************************************
- * DHT11 온습도 함수
+/******************************************** ************
+ * DHT11 온습도 함수 
  ********************************************************/
 
 // DHT 센서 트리거 (1: 시작, 0: 정지)
@@ -502,12 +536,11 @@ uint32_t us_measure(uint32_t *autoMeasure) {
     US_start(US, 0);  // 측정 준비
 
     if (Button_getState(GPIOD) & (1 << 5)) { // 수동 측정 트리거 부분 (버튼 입력)
-        while (Button_getState(GPIOD) & (1 << 5));  
+        while (Button_getState(GPIOD) & (1 << 5));
         US_start(US, 1);  
     } else if(*autoMeasure){
         US_start(US, 1);
-    }
-
+    } 
 
     uint32_t valid = US_check_vaild(US);
     uint32_t dist = US_dist_read(US);

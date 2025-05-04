@@ -11,32 +11,32 @@ module MCU (
     output logic [7:0] FND_font,
     input  logic       rx,
     output logic       tx,
-    input logic echo,
-    output logic trigger,
-    inout dht_io
+    input  logic       echo,
+    output logic       trigger,
+    inout              dht_io  
 );
 
-    // global signals
+    // global signals    
     logic        PCLK;
-    logic        PRESET;
-    // APB Interface Signals
+    logic        PRESET;  
+    // APB Interface Signals    
     logic [31:0] PADDR;
     logic [31:0] PWDATA;
     logic        PWRITE;
     logic        PENABLE;
     logic        PSEL_RAM;
-    logic        PSEL_GPOA;  
+    logic        PSEL_GPOA;
     logic        PSEL_GPIB;
     logic        PSEL_GPIOC;
-    logic        PSEL_GPIOD;
+    logic        PSEL_GPIOD;  
     logic        PSEL_FND;
     logic        PSEL_UART;
-    logic        PSEL_TIMER;
+    logic        PSEL_TIMER;  
     logic        PSEL_US;
     logic        PSEL_DHT;
-    logic [31:0] PRDATA_RAM;
+    logic [31:0] PRDATA_RAM;  
     logic [31:0] PRDATA_GPOA;
-    logic [31:0] PRDATA_GPIB;
+    logic [31:0] PRDATA_GPIB;  
     logic [31:0] PRDATA_GPIOC;
     logic [31:0] PRDATA_GPIOD;
     logic [31:0] PRDATA_FND;
@@ -101,17 +101,17 @@ module MCU (
         .PSEL9(PSEL_DHT),
         .PSEL10(),
         .PRDATA0(PRDATA_RAM),
-        .PRDATA1(PRDATA_GPOA),
+        .PRDATA1(PRDATA_GPOA),  
         .PRDATA2(PRDATA_GPIB),
         .PRDATA3(PRDATA_GPIOC),
         .PRDATA4(PRDATA_GPIOD),
         .PRDATA5(PRDATA_FND),
-        .PRDATA6(PRDATA_UART),
+        .PRDATA6(PRDATA_UART),  
         .PRDATA7(PRDATA_TIMER),
         .PRDATA8(PRDATA_US),
         .PRDATA9(PRDATA_DHT),
         .PRDATA10(),
-        .PREADY0(PREADY_RAM),
+        .PREADY0(PREADY_RAM),  
         .PREADY1(PREADY_GPOA),
         .PREADY2(PREADY_GPIB),
         .PREADY3(PREADY_GPIOC),
@@ -119,8 +119,8 @@ module MCU (
         .PREADY5(PREADY_FND),
         .PREADY6(PREADY_UART),
         .PREADY7(PREADY_TIMER),
-        .PREADY8(PREADY_US),
-        .PREADY9(PREADY_DHT),
+        .PREADY8(PREADY_US),  
+        .PREADY9(PREADY_DHT),  
         .PREADY10()
     );
 
@@ -152,7 +152,7 @@ module MCU (
         .PSEL  (PSEL_GPIOC),
         .PRDATA(PRDATA_GPIOC),
         .PREADY(PREADY_GPIOC),
-        .GPIO  (GPIOC)
+        .GPIO  (GPIOC)  
     );
 
     GPIO_Periph U_GPIOD (
@@ -176,8 +176,8 @@ module MCU (
         .PSEL  (PSEL_UART),
         .PRDATA(PRDATA_UART),
         .PREADY(PREADY_UART)
-    );
-  
+    );  
+
     timer_periph u_timer_periph (
         .*,
         .PSEL  (PSEL_TIMER),
@@ -185,7 +185,7 @@ module MCU (
         .PREADY(PREADY_TIMER)
     );
 
-    Ultrasound_Peripheral u_Ultrasound_Periph(
+    Ultrasound_Peripheral u_Ultrasound_Periph (
         .*,
         .PSEL  (PSEL_US),
         .PRDATA(PRDATA_US),
@@ -193,11 +193,11 @@ module MCU (
 
     );
 
-    DHT11_Controller_Periph u_DHT11_Controller_Periph(
+    DHT11_Controller_Periph u_DHT11_Controller_Periph (
         .*,
         .PSEL  (PSEL_DHT),
-        .PRDATA(PRDATA_DHT),  
-        .PREADY(PREADY_DHT)  
+        .PRDATA(PRDATA_DHT),
+        .PREADY(PREADY_DHT)
     );
 
 endmodule
