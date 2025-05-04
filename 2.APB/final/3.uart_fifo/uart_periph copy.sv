@@ -13,11 +13,11 @@ module uart_Periph (
     output logic [31:0] PRDATA,
     output logic        PREADY,
 
-    input  logic rx,
+    input logic rx,
     output logic tx
 );
 
-    logic loop;
+
     logic empty_TX, full_TX;
     logic empty_RX, full_RX;
     logic we_TX, re_RX;
@@ -29,11 +29,11 @@ module uart_Periph (
 
     uart_SlaveIntf U_uart_Intf (
         .*,
-        .USR({full_TX, empty_RX}),
-        .ULS(loop),
-        .UWD(wdata_TX),
-        .URD(rdata_RX)
-    );
+        .FSR_TX({full_TX, empty_TX}),
+        .FSR_RX({full_RX, empty_RX}),
+        .FWD(wdata_TX),
+        .FRD(rdata_RX)
+        );
 
 
     fifo fifo_tx (
@@ -57,14 +57,14 @@ module uart_Periph (
         .empty(empty_RX),
         .full(full_RX)
     );
-    rx RX (
+    rx RX(
         .*,
         .clk(PCLK),
         .rst(PRESET),
         .rx_data(wdata_RX)
     );
 
-    tx TX (
+    tx TX(
         .*,
         .clk(PCLK),
         .rst(PRESET),
@@ -72,7 +72,7 @@ module uart_Periph (
         .tx_start(!empty_TX)
     );
 
-    baud_tick_gen U_BAUD_TICK_GEN (
+    baud_tick_gen U_BAUD_TICK_GEN(
         .clk(PCLK),
         .rst(PRESET),
         .baud_tick(tick)
@@ -92,10 +92,10 @@ module uart_SlaveIntf (
     output logic [31:0] PRDATA,
     output logic        PREADY,
     // internal signals
-    input  logic [ 1:0] USR,
-    input  logic        ULS,      //loop signal
-    output logic [ 7:0] UWD,
-    input  logic [ 7:0] URD,
+    input  logic [ 1:0] FSR_TX,
+    input  logic [ 1:0] FSR_RX,
+    output logic [ 7:0] FWD,
+    input  logic [ 7:0] FRD,
     output logic        we_TX,
     output logic        re_RX
 );
@@ -113,23 +113,24 @@ module uart_SlaveIntf (
     typedef enum {
         IDLE,
         READ,
-        WRITE
+        WRITE,
+        HOLD
     } state_e;
 
     state_e state_reg, state_next;
 
-    assign slv_reg0[1:0] = USR;
-    assign slv_reg1 = ULS;
-    assign UWD = slv_reg2[7:0];
-    assign slv_reg3[7:0] = URD;
+    assign slv_reg0[1:0] = FSR_TX;
+    assign slv_reg1[1:0] = FSR_RX;
+    assign FWD = slv_reg2[7:0];
+    assign slv_reg3[7:0] = FRD; 
 
     assign PRDATA = PRDATA_reg;
     assign PREADY = PREADY_reg;
 
     always_ff @(posedge PCLK, posedge PRESET) begin
         if (PRESET) begin
-            slv_reg0[31:2] <=0; //USR 
-            slv_reg1[31:1] <=0; //USR_RX
+            slv_reg0[31:2] <=0; //FSR_TX 
+            slv_reg1[31:2] <=0; //FSR_RX
             slv_reg3[31:8] <=0;
             slv_reg2 <=0;
             state_reg <= IDLE;
@@ -160,7 +161,7 @@ module uart_SlaveIntf (
                 PREADY_next = 1'b0;
                 if (PSEL && PENABLE) begin
                     if (PWRITE) begin
-                        state_next = WRITE;
+                        state_next= WRITE;
                         we_next = 1'b1;
                         re_next = 1'b0;
                         PREADY_next = 1'b1;
@@ -173,7 +174,7 @@ module uart_SlaveIntf (
                             2'd2: ;
                         endcase
                     end else begin
-                        state_next = READ;
+                        state_next= READ;
                         PREADY_next = 1'b1;
                         we_next = 1'b0;
                         case (PADDR[3:2])
@@ -202,13 +203,19 @@ module uart_SlaveIntf (
                 re_next = 1'b0;
                 we_next = 1'b0;
                 PREADY_next = 1'b0;
-                state_next = IDLE;
+                state_next = HOLD; 
             end
             WRITE: begin
-                we_next = 1'b0;
+                we_next =1'b0;
+                re_next = 1'b0;
+                state_next = HOLD;
+                PREADY_next = 1'b0;
+            end
+            HOLD: begin
+                we_next =1'b0;
                 re_next = 1'b0;
                 state_next = IDLE;
-                PREADY_next = 1'b0;
+                PREADY_next = 1'b0; 
             end
         endcase
     end

@@ -24,7 +24,7 @@ module MCU (
     logic        PSEL_GPO;    
     logic        PSEL_GPI;
     logic        PSEL_GPIOC;
-    logic        PSEL_GPIOD;  
+    logic        PSEL_GPIOD;    
     logic        PSEL_FND;
     logic        PSEL_UART;
     logic        PSEL_TIMER;

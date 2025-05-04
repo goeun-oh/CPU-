@@ -17,7 +17,6 @@ module uart_Periph (
     output logic tx
 );
 
-    logic loop;
     logic empty_TX, full_TX;
     logic empty_RX, full_RX;
     logic we_TX, re_RX;
@@ -29,8 +28,7 @@ module uart_Periph (
 
     uart_SlaveIntf U_uart_Intf (
         .*,
-        .USR({full_TX, empty_RX}),
-        .ULS(loop),
+        .USR({full_RX, empty_TX, full_TX, empty_RX}),
         .UWD(wdata_TX),
         .URD(rdata_RX)
     );
@@ -92,15 +90,14 @@ module uart_SlaveIntf (
     output logic [31:0] PRDATA,
     output logic        PREADY,
     // internal signals
-    input  logic [ 1:0] USR,
-    input  logic        ULS,      //loop signal
+    input  logic [ 3:0] USR,
     output logic [ 7:0] UWD,
     input  logic [ 7:0] URD,
     output logic        we_TX,
     output logic        re_RX
 );
     logic [31:0] slv_reg0, slv_reg1, slv_reg2, slv_reg3;
-    logic [31:0] slv_reg2_next;
+    logic [31:0] slv_reg1_next, slv_reg2_next;
 
     logic we_reg, we_next;
     logic re_reg, re_next;
@@ -118,8 +115,8 @@ module uart_SlaveIntf (
 
     state_e state_reg, state_next;
 
-    assign slv_reg0[1:0] = USR;
-    assign slv_reg1 = ULS;
+    assign slv_reg0[3:0] = USR;
+    assign ULS = slv_reg1;
     assign UWD = slv_reg2[7:0];
     assign slv_reg3[7:0] = URD;
 
@@ -128,8 +125,8 @@ module uart_SlaveIntf (
 
     always_ff @(posedge PCLK, posedge PRESET) begin
         if (PRESET) begin
-            slv_reg0[31:2] <=0; //USR 
-            slv_reg1[31:1] <=0; //USR_RX
+            slv_reg0[31:4] <=0; //USR 
+            slv_reg1 <=0; //USR_RX
             slv_reg3[31:8] <=0;
             slv_reg2 <=0;
             state_reg <= IDLE;
@@ -138,6 +135,7 @@ module uart_SlaveIntf (
             PRDATA_reg <= 32'bx;
             PREADY_reg <= 1'b0;
         end else begin
+            slv_reg1 <= slv_reg1_next;
             slv_reg2  <= slv_reg2_next;
             state_reg <= state_next;
             we_reg    <= we_next;
@@ -149,6 +147,7 @@ module uart_SlaveIntf (
 
     always_comb begin
         state_next = state_reg;
+        slv_reg1_next =slv_reg1;
         slv_reg2_next = slv_reg2;
         we_next = we_reg;
         re_next = re_reg;
@@ -166,7 +165,7 @@ module uart_SlaveIntf (
                         PREADY_next = 1'b1;
                         case (PADDR[3:2])
                             2'd0: ;
-                            2'd1: ;
+                            2'd1: slv_reg1_next =PWDATA;
                             2'd2: begin
                                 slv_reg2_next = PWDATA;
                             end
