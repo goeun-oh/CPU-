@@ -95,7 +95,7 @@ module MCU (
         .PSEL3(PSEL_GPIOC),
         .PSEL4(PSEL_GPIOD),
         .PSEL5(PSEL_FND),
-        .PSEL6(PSEL_UART),
+        .PSEL6(PSEL_UART),  
         .PSEL7(PSEL_TIMER),
         .PSEL8(PSEL_US),
         .PSEL9(PSEL_DHT),
@@ -137,7 +137,7 @@ module MCU (
         .PRDATA (PRDATA_GPOA),
         .PREADY (PREADY_GPOA),
         .outPort(GPOA)
-    );
+    );  
 
     GPI_Periph U_GPIB (
         .*,
