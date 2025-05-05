@@ -400,20 +400,25 @@ void UART_RUN(UART_TypeDef *uart, uint32_t *write, uint32_t *us_dist, uint32_t *
             delay(10);
             UART_WriteSensorData(uart, 0x3a);
             delay(10);
-            while ((readFndBCD(FND)  >> 4 ) & 0x03 == 0x00)
+
+            while (((readFndBCD(FND)  >> 4 ) & 0x03) != 0x03);
             temp_us = (readFndBCD(FND) & 0x0f) +'0';
             UART_WriteSensorData(uart, temp_us);
-            delay(10);
-            while ((readFndBCD(FND)  >> 4 ) & 0x03 == 0x01)
-            temp_us = readFndBCD(FND) + '0';
+            delay(10);    
+            
+            while (((readFndBCD(FND)  >> 4 ) & 0x03) != 0x02);
+            temp_us = (readFndBCD(FND) & 0x0f) + '0';
             UART_WriteSensorData(uart, temp_us);
             delay(10);
-            while ((readFndBCD(FND)  >> 4 ) & 0x03 == 0x02)
-            temp_us = readFndBCD(FND) + '0';
+
+            while (((readFndBCD(FND)  >> 4 ) & 0x03) != 0x01);
+            temp_us = (readFndBCD(FND) & 0x0f) + '0';
             UART_WriteSensorData(uart, temp_us);
             delay(10);
-            while ((readFndBCD(FND)  >> 4 ) & 0x03 == 0x03)
-            temp_us = readFndBCD(FND) + '0';
+
+
+            while (((readFndBCD(FND)  >> 4 ) & 0x03) != 0x00);
+            temp_us = (readFndBCD(FND) & 0x0f) + '0';
             UART_WriteSensorData(uart, temp_us);
             delay(10);
 

@@ -74,7 +74,7 @@ module MCU (
     assign PCLK = clk;
     assign PRESET = reset;
     assign addr = dataAddr;
-    assign wdata = dataWData;
+    assign wdata = dataWData;  
     assign dataRData = rdata;
     assign write = dataWe;
 
@@ -88,7 +88,7 @@ module MCU (
 
 
     APB_Master U_APB_Master (
-        .*,
+        .*,  
         .PSEL0(PSEL_RAM),
         .PSEL1(PSEL_GPOA),
         .PSEL2(PSEL_GPIB),

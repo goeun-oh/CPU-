@@ -393,37 +393,21 @@ void UART_RUN(UART_TypeDef *uart, uint32_t *write, uint32_t *us_dist, uint32_t *
      * we: FIFO TX가 full가 아닐때 그 FIFO TX 에 담긴 값을 write
      * re: FIFO RX가 empty가 아닐때 그 FIFO RX 에 담긴 값을 read
      */
-        if(((UART_writeCheck(uart) & (one << 1))) ==0 && us_autoMeasure){
-            uint8_t digit[4] = { '?', '?', '?', '?' };  // 각각의 자릿값 저장
-            uint8_t bcd;
-            int count = 0;
-            
-            while (count < 4) {
-                bcd = readFndBCD(FND);
-                uint8_t pos = (bcd >> 4) & 0x03;     // 상위 2비트: 자리
-                uint8_t val = (bcd & 0x0F);          // 하위 4비트: 숫자
-                
-                if (digit[pos] == '?') {            // 아직 저장 안 했으면
-                    digit[pos] = val + '0';         // 숫자 ASCII로 변환
-                    count++;
-                }
-            }
-            
-            // 이제 전송
-            UART_WriteSensorData(uart, 0x75); delay(10);  // 'u'
-            UART_WriteSensorData(uart, 0x73); delay(10);  // 's'
-            UART_WriteSensorData(uart, 0x3A); delay(10);  // ':'
-            
-            for (int i = 0; i < 4; i++) {
-                UART_WriteSensorData(uart, digit[i]);
-                delay(10);
-            }
-            
-            UART_WriteSensorData(uart, 0x0A);  // 개행
-            
+        if (((UART_writeCheck(uart) & (1 << 1)) == 0) && us_autoMeasure) {
+            UART_WriteSensorData(uart, 'u');
+            delay(10);
+            UART_WriteSensorData(uart, 's');
+            delay(10);
+            UART_WriteSensorData(uart, ':');
+            delay(10);
+        
+            sendFndDigitsFSM(uart);  // FSM 실행
+        
+            UART_WriteSensorData(uart, '\n');  // 개행
+            delay(10);
             return;
         }
-
+    
         if((UART_writeCheck(uart) & (one)) == 0){
             rbyte = UART_readData(uart);
             if(rbyte == 0x58) {
@@ -432,6 +416,53 @@ void UART_RUN(UART_TypeDef *uart, uint32_t *write, uint32_t *us_dist, uint32_t *
             }
             return;
         }
+    }
+}
+typedef enum {
+    STATE_0,
+    STATE_1,
+    STATE_2,
+    STATE_3
+} State;
+
+void sendFndDigitsFSM(UART_TypeDef *uart) {
+    State curr_state = STATE_0;
+    uint8_t fnd_data;
+    uint8_t digit;
+
+    while (1) {
+        fnd_data = readFndBCD(FND);
+        uint8_t upper = (fnd_data >> 4) & 0x03;
+        uint8_t lower = fnd_data & 0x0F;
+
+        switch (curr_state) {
+            case STATE_0:
+                if (upper == 0x00) {
+                    UART_WriteSensorData(uart, lower + '0');
+                    curr_state = STATE_1;
+                }
+                break;
+            case STATE_1:
+                if (upper == 0x01) {
+                    UART_WriteSensorData(uart, lower + '0');
+                    curr_state = STATE_2;
+                }
+                break;
+            case STATE_2:
+                if (upper == 0x02) {
+                    UART_WriteSensorData(uart, lower + '0');
+                    curr_state = STATE_3;
+                }
+                break;
+            case STATE_3:
+                if (upper == 0x03) {
+                    UART_WriteSensorData(uart, lower + '0');
+                    return;  // 모든 자리 출력 완료
+                }
+                break;
+        }
+
+        delay(1);  // 너무 빠른 polling 방지
     }
 }
 
