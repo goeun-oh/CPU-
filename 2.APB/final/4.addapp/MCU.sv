@@ -83,7 +83,7 @@ module MCU (
         .data(instrCode)
     );
 
-    RV32I_Core U_Core (.*);
+    RV32I_Core U_Core (.*);  
 
 
 
@@ -101,11 +101,11 @@ module MCU (
         .PSEL9(PSEL_DHT),
         .PSEL10(),
         .PRDATA0(PRDATA_RAM),
-        .PRDATA1(PRDATA_GPOA),  
+        .PRDATA1(PRDATA_GPOA),    
         .PRDATA2(PRDATA_GPIB),
         .PRDATA3(PRDATA_GPIOC),
         .PRDATA4(PRDATA_GPIOD),
-        .PRDATA5(PRDATA_FND),
+        .PRDATA5(PRDATA_FND),  
         .PRDATA6(PRDATA_UART),  
         .PRDATA7(PRDATA_TIMER),
         .PRDATA8(PRDATA_US),

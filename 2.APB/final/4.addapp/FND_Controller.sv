@@ -17,7 +17,7 @@ module FND_Periph (
 );
 
     logic FCR;
-    logic [3:0] FBR;
+    logic [5:0] FBR;
     logic [13:0] FDR;
     logic [1:0] seg_sel;
     logic o_clk;
@@ -59,7 +59,7 @@ module APB_Intf_FND (
     output logic        FCR,
     output logic [13:0] FDR,
     output logic [ 3:0] FPR,
-    input  logic [ 3:0] FBR
+    input  logic [ 5:0] FBR
 );
 
     logic [31:0] slv_reg0, slv_reg1, slv_reg2, slv_reg3;
@@ -67,14 +67,14 @@ module APB_Intf_FND (
     assign FCR = slv_reg0[0];
     assign FDR = slv_reg1[13:0];
     assign FPR = slv_reg2[3:0];
-    assign slv_reg3[3:0] = FBR;
+    assign slv_reg3[5:0] = FBR;
 
     always_ff @(posedge PCLK or posedge PRESET) begin
         if (PRESET) begin
             slv_reg0 <= 0;
             slv_reg1 <= 0;
             slv_reg2 <= 0;
-            slv_reg3[31:4] <= 0;
+            slv_reg3[31:6] <= 0;
 
 
         end else begin
@@ -116,7 +116,7 @@ module FND_controller (
     input  logic        FCR,
     input  logic [13:0] FDR,
     input  logic [ 3:0] FPR,
-    output logic [ 3:0] FBR,       //FND BCD Register
+    output logic [ 5:0] FBR,       //FND BCD Register
     output logic [ 3:0] FND_comm,
     output logic [ 7:0] FND_font,
     input  logic [ 1:0] seg_sel
@@ -129,7 +129,7 @@ module FND_controller (
     assign fnd_1 = (FDR % 100) / 10;
     assign fnd_0 = FDR % 10;
 
-    assign FBR   = fnd_final_data;
+    assign FBR   = {seg_sel, fnd_final_data};
 
     always_comb begin
         case (seg_sel)

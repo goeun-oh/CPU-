@@ -394,32 +394,32 @@ void UART_RUN(UART_TypeDef *uart, uint32_t *write, uint32_t *us_dist, uint32_t *
      * re: FIFO RX가 empty가 아닐때 그 FIFO RX 에 담긴 값을 read
      */
         if(((UART_writeCheck(uart) & (one << 1))) ==0 && us_autoMeasure){
-            UART_WriteSensorData(uart, 0x75);
-            delay(10);
-            UART_WriteSensorData(uart, 0x73);
-            delay(10);
-            UART_WriteSensorData(uart, 0x3a);
-            delay(10);
-            while ((readFndBCD(FND)  >> 4 ) & 0x03 == 0x00)
-            temp_us = (readFndBCD(FND) & 0x0f) +'0';
-            UART_WriteSensorData(uart, temp_us);
-            delay(10);
-            while ((readFndBCD(FND)  >> 4 ) & 0x03 == 0x01)
-            temp_us = readFndBCD(FND) + '0';
-            UART_WriteSensorData(uart, temp_us);
-            delay(10);
-            while ((readFndBCD(FND)  >> 4 ) & 0x03 == 0x02)
-            temp_us = readFndBCD(FND) + '0';
-            UART_WriteSensorData(uart, temp_us);
-            delay(10);
-            while ((readFndBCD(FND)  >> 4 ) & 0x03 == 0x03)
-            temp_us = readFndBCD(FND) + '0';
-            UART_WriteSensorData(uart, temp_us);
-            delay(10);
-
-
-            UART_WriteSensorData(uart, 0x0a);
-            delay(10);
+            uint8_t digit[4] = { '?', '?', '?', '?' };  // 각각의 자릿값 저장
+            uint8_t bcd;
+            int count = 0;
+            
+            while (count < 4) {
+                bcd = readFndBCD(FND);
+                uint8_t pos = (bcd >> 4) & 0x03;     // 상위 2비트: 자리
+                uint8_t val = (bcd & 0x0F);          // 하위 4비트: 숫자
+                
+                if (digit[pos] == '?') {            // 아직 저장 안 했으면
+                    digit[pos] = val + '0';         // 숫자 ASCII로 변환
+                    count++;
+                }
+            }
+            
+            // 이제 전송
+            UART_WriteSensorData(uart, 0x75); delay(10);  // 'u'
+            UART_WriteSensorData(uart, 0x73); delay(10);  // 's'
+            UART_WriteSensorData(uart, 0x3A); delay(10);  // ':'
+            
+            for (int i = 0; i < 4; i++) {
+                UART_WriteSensorData(uart, digit[i]);
+                delay(10);
+            }
+            
+            UART_WriteSensorData(uart, 0x0A);  // 개행
             
             return;
         }
