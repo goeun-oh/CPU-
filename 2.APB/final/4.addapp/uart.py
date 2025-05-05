@@ -1,7 +1,7 @@
 import serial
 import threading
 
-PORT = '/dev/ttyUSB2'
+PORT = '/dev/ttyUSB1'
 BAUDRATE = 9600
 
 ser = serial.Serial(PORT, BAUDRATE, timeout=0.5)

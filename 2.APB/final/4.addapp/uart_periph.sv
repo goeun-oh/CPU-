@@ -125,34 +125,34 @@ module uart_SlaveIntf (
 
     always_ff @(posedge PCLK, posedge PRESET) begin
         if (PRESET) begin
-            slv_reg0[31:4] <=0; //USR 
-            slv_reg1 <=0; //USR_RX
-            slv_reg3[31:8] <=0;
-            slv_reg2 <=0;
-            state_reg <= IDLE;
-            we_reg    <= 0;
-            re_reg    <= 0;
-            PRDATA_reg <= 32'bx;
-            PREADY_reg <= 1'b0;
+            slv_reg0[31:4] <= 0;  //USR 
+            slv_reg1       <= 0;  //USR_RX
+            slv_reg3[31:8] <= 0;
+            slv_reg2       <= 0;
+            state_reg      <= IDLE;
+            we_reg         <= 0;
+            re_reg         <= 0;
+            PRDATA_reg     <= 32'bx;
+            PREADY_reg     <= 1'b0;
         end else begin
-            slv_reg1 <= slv_reg1_next;
-            slv_reg2  <= slv_reg2_next;
-            state_reg <= state_next;
-            we_reg    <= we_next;
-            re_reg    <= re_next;
+            slv_reg1   <= slv_reg1_next;
+            slv_reg2   <= slv_reg2_next;
+            state_reg  <= state_next;
+            we_reg     <= we_next;
+            re_reg     <= re_next;
             PRDATA_reg <= PRDATA_next;
             PREADY_reg <= PREADY_next;
         end
     end
 
     always_comb begin
-        state_next = state_reg;
-        slv_reg1_next =slv_reg1;
+        state_next    = state_reg;
+        slv_reg1_next = slv_reg1;
         slv_reg2_next = slv_reg2;
-        we_next = we_reg;
-        re_next = re_reg;
-        PRDATA_next = PRDATA_reg;
-        PREADY_next = PREADY_reg;
+        we_next       = we_reg;
+        re_next       = re_reg;
+        PRDATA_next   = PRDATA_reg;
+        PREADY_next   = PREADY_reg;
 
         case (state_reg)
             IDLE: begin
@@ -165,11 +165,11 @@ module uart_SlaveIntf (
                         PREADY_next = 1'b1;
                         case (PADDR[3:2])
                             2'd0: ;
-                            2'd1: slv_reg1_next =PWDATA;
+                            2'd1: slv_reg1_next = PWDATA;
                             2'd2: begin
                                 slv_reg2_next = PWDATA;
                             end
-                            2'd2: ;
+                            2'd3: ;
                         endcase
                     end else begin
                         state_next = READ;

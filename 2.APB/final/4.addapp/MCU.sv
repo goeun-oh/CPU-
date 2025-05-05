@@ -6,18 +6,18 @@ module MCU (
     output logic [7:0] GPOA,
     input  logic [7:0] GPIB,
     inout  logic [7:0] GPIOC,
-    inout  logic [7:0] GPIOD,
-    output logic [3:0] FND_comm,
+    inout  logic [7:0] GPIOD,   
+    output logic [3:0] FND_comm,  
     output logic [7:0] FND_font,
     input  logic       rx,
     output logic       tx,
     input  logic       echo,
     output logic       trigger,
     inout              dht_io  
-);
+);  
 
     // global signals    
-    logic        PCLK;
+    logic        PCLK;  
     logic        PRESET;  
     // APB Interface Signals    
     logic [31:0] PADDR;

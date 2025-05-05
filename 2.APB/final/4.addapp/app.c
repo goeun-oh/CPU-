@@ -22,6 +22,7 @@ typedef struct {
     __IO uint32_t FCR;
     __IO uint32_t FDR;
     __IO uint32_t FPR;
+    __IO uint32_t FBR;
 } FND_TypeDef;
 
 // GPIO 공통 포트 구조체
@@ -104,6 +105,7 @@ void GPO_write(GPO_TypeDef* GPOx, uint32_t data);
 void fndEn(FND_TypeDef* FNDx, uint32_t n);
 void fndfont(FND_TypeDef* FNDx, uint32_t fndFont);
 void fndDot(FND_TypeDef* FNDx, uint32_t Dot);
+uint32_t readFndBCD(FND_TypeDef* FNDx);
 
 // 버튼 및 LED 제어 함수
 void Button_init(GPIO_TypeDef *GPIOx);
@@ -130,7 +132,7 @@ uint32_t UART_writeCheck(UART_TypeDef *uart);
 void UART_SetLoop(UART_TypeDef *uart, uint32_t set);
 uint32_t UART_isLoop(UART_TypeDef *uart);
 void UART_WriteLoopData(UART_TypeDef *uart);
-void UART_WriteSensorData(UART_TypeDef *uart, uint32_t *sensorData);
+void UART_WriteSensorData(UART_TypeDef *uart, uint32_t sensorData);
 uint32_t UART_readData(UART_TypeDef *uart);
 void UART_RUN(UART_TypeDef *uart, uint32_t *write, uint32_t *us_dist, uint32_t *setTim, uint32_t *arr, uint32_t us_autoMeasure);
 
@@ -275,6 +277,10 @@ void fndDot(FND_TypeDef* FNDx, uint32_t Dot) {
     FNDx->FPR = Dot;
 }
 
+uint32_t readFndBCD(FND_TypeDef* FNDx){
+    return FNDx->FBR;
+}
+
 /********************************************************
  * 버튼 및 LED 함수 (GPIO)
  ********************************************************/
@@ -366,6 +372,7 @@ void UART_RUN(UART_TypeDef *uart, uint32_t *write, uint32_t *us_dist, uint32_t *
         if(((UART_writeCheck(uart) & (one))) ==0){
             UART_WriteLoopData(uart);
             *write = 0x01;
+            return;
         }
 
         if((UART_writeCheck(uart) & (one <<1)) == 0){
@@ -378,6 +385,7 @@ void UART_RUN(UART_TypeDef *uart, uint32_t *write, uint32_t *us_dist, uint32_t *
                     *setTIM = 0x01;                    
                 }
                 *write =0x00;
+                return;
             }
         }
     } else {
@@ -386,27 +394,26 @@ void UART_RUN(UART_TypeDef *uart, uint32_t *write, uint32_t *us_dist, uint32_t *
      * re: FIFO RX가 empty가 아닐때 그 FIFO RX 에 담긴 값을 read
      */
         if(((UART_writeCheck(uart) & (one << 1))) ==0 && us_autoMeasure){
-            temp_us = (*us_dist >>0) & 0xff;
-            UART_WriteSensorData(uart, &temp_us);
-            temp_us = (*us_dist >>8) & 0xff;
-            UART_WriteSensorData(uart, &temp_us);
-            temp_us = (*us_dist >>16) & 0xff;
-            UART_WriteSensorData(uart, &temp_us);
-            temp_us = (*us_dist >>24) & 0xff;
-            UART_WriteSensorData(uart, &temp_us);
-
-            *write = 0x01;
+            UART_WriteSensorData(uart, 0x75);
+            UART_WriteSensorData(uart, 0x73);
+            UART_WriteSensorData(uart, 0x3a);
+            temp_us = readFndBCD(FND) +'0';
+            UART_WriteSensorData(uart, temp_us);
+            delay(10);
+            temp_us = readFndBCD(FND) + '0';
+            UART_WriteSensorData(uart, temp_us);
+            UART_WriteSensorData(uart, 0x0a);
+            
+            return;
         }
 
         if((UART_writeCheck(uart) & (one)) == 0){
-            if (*write & (one <<0)){
-                rbyte = UART_readData(uart);
-                if(rbyte == 0x58) {
-                    UART_SetLoop(uart, 0x01);
-                    *arr =0x00;
-                }
-                *write =0x00;
+            rbyte = UART_readData(uart);
+            if(rbyte == 0x58) {
+                UART_SetLoop(uart, 0x01);
+                *arr =0x00;
             }
+            return;
         }
     }
 }
@@ -434,9 +441,9 @@ void UART_WriteLoopData(UART_TypeDef *uart)
 }
 
 // sesnor data 쓰기 (sensor 값을 UWD 에 쓰기)
-void UART_WriteSensorData(UART_TypeDef *uart, uint32_t *sensorData)
+void UART_WriteSensorData(UART_TypeDef *uart, uint32_t sensorData)
 {
-    uart->UWD = *sensorData;
+    uart->UWD = sensorData;
 }
 
 // PC에서 입력 받은 값(RX data) 읽기

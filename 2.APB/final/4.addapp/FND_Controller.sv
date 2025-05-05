@@ -12,26 +12,22 @@ module FND_Periph (
     output logic [31:0] PRDATA,
     output logic        PREADY,
     // external signal
-    output logic [3:0] FND_comm,
-    output logic [7:0] FND_font
+    output logic [ 3:0] FND_comm,
+    output logic [ 7:0] FND_font
 );
 
     logic FCR;
-    // logic [3:0] FMR;
+    logic [3:0] FBR;
     logic [13:0] FDR;
     logic [1:0] seg_sel;
     logic o_clk;
     logic [3:0] FPR;
 
-    APB_Intf_FND u_APB_Intf_FND(
-        .*
-    );
+    APB_Intf_FND u_APB_Intf_FND (.*);
 
-    FND_controller u_FND_controller(
-        .*
-    );
+    FND_controller u_FND_controller (.*);
 
-     // 1kHz 클럭 분주기
+    // 1kHz 클럭 분주기
     clk_divider u_clk_divider (
         .clk  (PCLK),
         .reset(PRESET),
@@ -39,12 +35,12 @@ module FND_Periph (
     );
 
     // 7-segment 선택 카운터 (0~3)
-    counter #(2) u_counter ( // Modified to count up to 3
-        .clk(o_clk),
-        .reset(PRESET),
+    counter #(2) u_counter (  // Modified to count up to 3
+        .clk    (o_clk),
+        .reset  (PRESET),
         .seg_sel(seg_sel)
     );
-    
+
 endmodule
 
 module APB_Intf_FND (
@@ -60,10 +56,10 @@ module APB_Intf_FND (
     output logic [31:0] PRDATA,
     output logic        PREADY,
     //output signals
-    output logic FCR,
-    // output logic [3:0] FMR,
+    output logic        FCR,
     output logic [13:0] FDR,
-    output logic [3:0] FPR
+    output logic [ 3:0] FPR,
+    input  logic [ 3:0] FBR
 );
 
     logic [31:0] slv_reg0, slv_reg1, slv_reg2, slv_reg3;
@@ -71,28 +67,28 @@ module APB_Intf_FND (
     assign FCR = slv_reg0[0];
     assign FDR = slv_reg1[13:0];
     assign FPR = slv_reg2[3:0];
-    // assign FMR = slv_reg2[3:0];
+    assign slv_reg3[3:0] = FBR;
 
     always_ff @(posedge PCLK or posedge PRESET) begin
         if (PRESET) begin
             slv_reg0 <= 0;
             slv_reg1 <= 0;
             slv_reg2 <= 0;
-            slv_reg3 <= 0;
+            slv_reg3[31:4] <= 0;
 
 
         end else begin
             PREADY <= 0;
             if (PSEL && PENABLE) begin
-                PREADY <=1;
+                PREADY <= 1;
                 if (PWRITE) begin
                     case (PADDR[3:2])
-                        2'd0 : slv_reg0 <= PWDATA; 
-                        2'd1 : slv_reg1 <= PWDATA; 
-                        2'd2 : slv_reg2 <= PWDATA; 
-                        2'd3 : slv_reg3 <= PWDATA; 
+                        2'd0: slv_reg0 <= PWDATA;
+                        2'd1: slv_reg1 <= PWDATA;
+                        2'd2: slv_reg2 <= PWDATA;
+                        2'd3: ;  //slv_reg3 <= PWDATA; 
                     endcase
-                end 
+                end
             end
         end
     end
@@ -117,102 +113,103 @@ endmodule
 
 
 module FND_controller (
-    input logic  FCR,
-    // input logic [3:0] FMR,
-    input logic [13:0] FDR,
-    input logic [3:0] FPR,
-    output logic [3:0] FND_comm,
-    output logic [7:0] FND_font,
-    input logic [1:0] seg_sel
+    input  logic        FCR,
+    input  logic [13:0] FDR,
+    input  logic [ 3:0] FPR,
+    output logic [ 3:0] FBR,       //FND BCD Register
+    output logic [ 3:0] FND_comm,
+    output logic [ 7:0] FND_font,
+    input  logic [ 1:0] seg_sel
 );
 
-    logic [3:0] fnd_final_data, fnd_0,fnd_1,fnd_2,fnd_3;
+    logic [3:0] fnd_final_data, fnd_0, fnd_1, fnd_2, fnd_3;
 
     assign fnd_3 = FDR / 1000;
     assign fnd_2 = (FDR % 1000) / 100;
-    assign fnd_1 = (FDR%100) / 10;
+    assign fnd_1 = (FDR % 100) / 10;
     assign fnd_0 = FDR % 10;
 
+    assign FBR   = fnd_final_data;
 
     always_comb begin
         case (seg_sel)
-            2'b00: FND_comm = FCR ? 4'b1110 : 4'b1111; // Digit 0 활성화
-            2'b01: FND_comm = FCR ? 4'b1101 : 4'b1111; // Digit 1 활성화
-            2'b10: FND_comm = FCR ? 4'b1011 : 4'b1111; // Digit 2 활성화
-            2'b11: FND_comm = FCR ? 4'b0111 : 4'b1111; // Digit 3 활성화
-            default: FND_comm = 4'b1111; // 모든 자리 비활성화
+            2'b00:   FND_comm = FCR ? 4'b1110 : 4'b1111;  // Digit 0 활성화
+            2'b01:   FND_comm = FCR ? 4'b1101 : 4'b1111;  // Digit 1 활성화
+            2'b10:   FND_comm = FCR ? 4'b1011 : 4'b1111;  // Digit 2 활성화
+            2'b11:   FND_comm = FCR ? 4'b0111 : 4'b1111;  // Digit 3 활성화
+            default: FND_comm = 4'b1111;  // 모든 자리 비활성화
         endcase
     end
 
     always_comb begin
         case (seg_sel)
-            2'b00: fnd_final_data = fnd_0; 
-            2'b01: fnd_final_data = fnd_1; 
-            2'b10: fnd_final_data = fnd_2; 
-            2'b11: fnd_final_data = fnd_3; 
-            default: fnd_final_data = 4'b0000; 
+            2'b00:   fnd_final_data = fnd_0;
+            2'b01:   fnd_final_data = fnd_1;
+            2'b10:   fnd_final_data = fnd_2;
+            2'b11:   fnd_final_data = fnd_3;
+            default: fnd_final_data = 4'b0000;
         endcase
     end
 
 
-    seg_decoder u_seg_decoder(
+    seg_decoder u_seg_decoder (
         .data(fnd_final_data),
         .seg_value(FND_font),
         .FPR(FPR),
         .seg_sel(seg_sel)
     );
-    
+
 endmodule
 
 
 module seg_decoder (
-    input logic [3:0] data,
+    input  logic [3:0] data,
     output logic [7:0] seg_value,
-    input logic [3:0] FPR,
-    input logic [1:0] seg_sel
+    input  logic [3:0] FPR,
+    input  logic [1:0] seg_sel
 );
     logic [7:0] bcdtoseg;
 
     always_comb begin
-    case (data)
-        4'd0:  bcdtoseg = 8'b11000000; // 0
-        4'd1:  bcdtoseg = 8'b11111001; // 1
-        4'd2:  bcdtoseg = 8'b10100100; // 2
-        4'd3:  bcdtoseg = 8'b10110000; // 3
-        4'd4:  bcdtoseg = 8'b10011001; // 4
-        4'd5:  bcdtoseg = 8'b10010010; // 5
-        4'd6:  bcdtoseg = 8'b10000010; // 6
-        4'd7:  bcdtoseg = 8'b11111000; // 7
-        4'd8:  bcdtoseg = 8'b10000000; // 8
-        4'd9:  bcdtoseg = 8'b10010000; // 9
-        4'd10: bcdtoseg = 8'b10001000; // A
-        4'd11: bcdtoseg = 8'b10000011; // b
-        4'd12: bcdtoseg = 8'b11000110; // C
-        4'd13: bcdtoseg = 8'b10100001; // d
-        4'd14: bcdtoseg = 8'b10000110; // E
-        4'd15: bcdtoseg = 8'b10001110; // F
-        default: bcdtoseg = 8'b11111111; // blank or error
-    endcase
+        case (data)
+            4'd0: bcdtoseg = 8'b11000000;  // 0
+            4'd1: bcdtoseg = 8'b11111001;  // 1
+            4'd2: bcdtoseg = 8'b10100100;  // 2
+            4'd3: bcdtoseg = 8'b10110000;  // 3
+            4'd4: bcdtoseg = 8'b10011001;  // 4
+            4'd5: bcdtoseg = 8'b10010010;  // 5
+            4'd6: bcdtoseg = 8'b10000010;  // 6
+            4'd7: bcdtoseg = 8'b11111000;  // 7
+            4'd8: bcdtoseg = 8'b10000000;  // 8
+            4'd9: bcdtoseg = 8'b10010000;  // 9
+            4'd10: bcdtoseg = 8'b10001000;  // A
+            4'd11: bcdtoseg = 8'b10000011;  // b
+            4'd12: bcdtoseg = 8'b11000110;  // C
+            4'd13: bcdtoseg = 8'b10100001;  // d
+            4'd14: bcdtoseg = 8'b10000110;  // E
+            4'd15: bcdtoseg = 8'b10001110;  // F
+            default: bcdtoseg = 8'b11111111;  // blank or error
+        endcase
     end
 
-    always_comb begin 
+    always_comb begin
 
         if (FPR[seg_sel]) begin
-            seg_value = {1'b0,bcdtoseg[6:0]};
+            seg_value = {1'b0, bcdtoseg[6:0]};
         end else begin
             seg_value = bcdtoseg;
         end
-        
+
     end
 
 
-    
+
 endmodule
 
 // 1kHz 클럭 분주기 (unchanged)
 module clk_divider (
-    input logic  clk,
-    input logic  reset,
+    input  logic clk,
+    input  logic reset,
     output logic o_clk
 );
     parameter CLK_DIV = 50000;
@@ -238,7 +235,7 @@ endmodule
 
 // 7-Segment 선택을 위한 카운터 (modified for 4 segments)
 module counter #(
-    parameter WIDTH = 2 // Width for 4 segments (0 to 3)
+    parameter WIDTH = 2  // Width for 4 segments (0 to 3)
 ) (
     input logic clk,
     input logic reset,
