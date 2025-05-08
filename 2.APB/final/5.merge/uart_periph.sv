@@ -28,7 +28,7 @@ module uart_Periph (
 
     uart_SlaveIntf U_uart_Intf (
         .*,
-        .USR({full_RX, empty_TX, full_TX, empty_RX}),
+        .USR({full_RX, empty_TX, !full_TX, !empty_RX}),
         .UWD(wdata_TX),
         .URD(rdata_RX)
     );
