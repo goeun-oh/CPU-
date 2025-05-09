@@ -54,9 +54,7 @@ UART TX 에서 1 byte를 송신하는데 까지 걸리는 시간은 `1/9600 * 10
 
 ```c
 void UART_writeData (UART_TypeDef *UARTx, uint32_t data) {
-    while((UART_state(UARTx) && (1 << 1))); 
-    //TXFIFO가 full이 아닐때 까지 대기 
-    //(TXFNF flag 기준 : TXFNF(TXFIFO Not Full), FIFO가 full이 아니면 1, full이면 0)
+    while((UART_state(UARTx) && (1 << 1))); //full일 경우 loop에 갇혀있음
     UARTx -> TDR = data;
 }
 ```
@@ -68,3 +66,11 @@ void UART_writeData (UART_TypeDef *UARTx, uint32_t data) {
 확인해보면 transmit buffer가 empty 일때까지 기다린 후 data를 put하는 것을 볼 수있는데, 이는 해당 MCU에서는 buffer의 size가 1 size 밖에 되지않아 이런 것으로 생각된다.
 
 시간이 더 주어진다면 위와 같이 delay 함수를 통해 데이터 누락 현상을 해결한다기보다 위와 같이 소프트웨어 적으로 조금 더 최적화하여 간단하게 누락 현상을 해결할 수 있지 않을까 싶다.
+
+read의 경우는,
+```c
+uint32_t UART_readData(UART_TypeDef *UARTx) {
+    while((UART_state(UARTx) && (1 <<0))); //empty일 경우 loop에 갇혀있음
+    return UARTx->URD;
+}
+```
