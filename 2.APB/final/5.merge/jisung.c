@@ -472,7 +472,6 @@ void UART_writeData (UART_TypeDef *UARTx, uint32_t data) {
 
 // FIFO에서 데이터 읽기
 uint32_t UART_readData(UART_TypeDef *UARTx) {
-    while((UART_state(UARTx) && (1 <<0)));
     return UARTx->URD;
 }
 
