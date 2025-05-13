@@ -164,3 +164,9 @@ BValid는 항상 Wvalid, wready가 발생한 후 발생해야함.
 
 ![alt text]({66697318-3E66-4E56-ACBF-5CC2617B8A4C}.png)
 RVALID는 Address valid ready handshaking이 일어난 후에 발생해야함.
+
+
+---
+AXI4-Lite Interface Signal
+![alt text]({EFEA8166-B672-4E35-BE4C-585236D55528}.png)
+
