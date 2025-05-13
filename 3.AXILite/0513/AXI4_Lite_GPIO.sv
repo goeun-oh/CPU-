@@ -107,7 +107,7 @@ module AXI4_Lite_Interface_GPIO (
 
     always_comb begin
         aw_state_next = aw_state;
-        ARREADY       = 1'b0;
+        AWREADY       = 1'b0;
         aw_addr_next  = aw_addr_reg;
         case (aw_state)
             AW_IDLE_S: begin
