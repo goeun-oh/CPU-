@@ -1,7 +1,8 @@
 
 `timescale 1 ns / 1 ps
 
-module GPIO_v1_0 #(
+module GPIO_v1_0 
+#(
     // Users to add parameters here
 
     // User parameters ends
@@ -53,10 +54,12 @@ module GPIO_v1_0 #(
     wire [7:0] odr;
     wire [7:0] idr;
 
-    GPIO_v1_0_S00_AXI #(
+    GPIO_v1_0_S00_AXI 
+	#(
         .C_S_AXI_DATA_WIDTH(C_S00_AXI_DATA_WIDTH),
         .C_S_AXI_ADDR_WIDTH(C_S00_AXI_ADDR_WIDTH)
-    ) GPIO_v1_0_S00_AXI_inst (
+    ) 
+	GPIO_v1_0_S00_AXI_inst (
         .moder(moder),
         .odr(odr),
         .idr(idr),
