@@ -166,3 +166,5 @@ systemVerilog로 구현하려면 이 class들을 일일이 구현해야한다.
 
 
 uvm 으로 포트폴리오 만들어야함
+
+project는 spi, i2c를 하면 좋겠다고 함
