@@ -148,6 +148,8 @@ endtask
 
 ### UVM user guide
 ![]({64B30605-6ABA-4B3B-95D4-BB225B97C544}.png)
+systemVerilog로 구현하려면 이 class들을 일일이 구현해야한다.
+구현할 필요없이 간단하게 class를 상속 받아서 쓸 수 있다.(uvm에서 이미 다 구현이 되어있다.)
 
 화살표를 받는 쪽이 부모, 보내는 쪽이 자식 class
 ![]({9E22DC93-E5E7-4453-A86E-822C12E5C691}.png)
