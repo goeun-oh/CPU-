@@ -43,7 +43,10 @@ wildcard 안붙이면 컴파일할때 에러난다.
 
 
 ---
+### vcs 이용하기
 vcs -> compiler
+> vcs는 system verilog를 compile할 수 있는 synopsys에서 제공하는 compiler이다.
+> vivado를 이용해서도 uvm을 돌릴 수 있지만 vcs tool을 사용해봤다는거에 메리트가 있다고 한다.
 
 complie 방법
 ![alt text]({65B41526-C060-4340-837C-A3DE8A1B7DEA}.png) -> 이러면 결과물인 `simv` 가 나온다.
@@ -137,4 +140,18 @@ endtask
 `phase.raise_objection(this)` : helloworld의 해당 instance "할 일 있어요! 시뮬레이션 끝내지 마세요!"
 `phase.drop_objection(this)` : 이제 끝남
 
+`uvm_info("TEST", "hello world!", UVM_MEDIUM);` : 
+- "TEST" -> ID : display 할 때 "MON", "SCB", "GEN" 같은거
+- "hello_world" -> String: string msg 
+- UVM_MEDIUM -> verbosity: 디버깅 시 로그 얼마나 자세히 출력할건지, medium은 중간
 </details>
+
+### UVM user guide
+![alt text]({64B30605-6ABA-4B3B-95D4-BB225B97C544}.png)
+
+화살표를 받는 쪽이 부모, 보내는 쪽이 자식 class
+![alt text]({9E22DC93-E5E7-4453-A86E-822C12E5C691}.png)
+
+
+이런 이상한 화살표는 instance를 내부에 포함하는 경우라고 한다.
+![alt text]({E32D7647-D74C-4852-BCE5-5FFC62F9480E}.png)
