@@ -1,5 +1,5 @@
 microblaze 환경 설명
-![alt text]({D596AE1E-BCB3-44EF-B920-493E48B72333}.png)
+![]({D596AE1E-BCB3-44EF-B920-493E48B72333}.png)
 rst block -> 장치 마다의 reset timing 이 다르다. 이를 관리
 
 APB -> peripheral 연동 -> APB bridge를 이용해 AXI에 붙이기 가능
@@ -36,10 +36,10 @@ register 정보만 알면된다.
 
 
 xilinx bug 잡기 (make file 오류 고치기)
-![alt text]({A34EDF2B-1D75-4464-8815-2684ECDF7B1F}.png)
+![]({A34EDF2B-1D75-4464-8815-2684ECDF7B1F}.png)
 
 wildcard 안붙이면 컴파일할때 에러난다.
-![alt text]({E095A243-9CF4-4F04-826C-DE81DFC11658}.png)
+![]({E095A243-9CF4-4F04-826C-DE81DFC11658}.png)
 
 
 ---
@@ -49,14 +49,14 @@ vcs -> compiler
 > vivado를 이용해서도 uvm을 돌릴 수 있지만 vcs tool을 사용해봤다는거에 메리트가 있다고 한다.
 
 complie 방법
-![alt text]({65B41526-C060-4340-837C-A3DE8A1B7DEA}.png) -> 이러면 결과물인 `simv` 가 나온다.
+![]({65B41526-C060-4340-837C-A3DE8A1B7DEA}.png) -> 이러면 결과물인 `simv` 가 나온다.
 
 
 d: directory
-![alt text]({A2A07F76-B941-451D-A4D3-3113D1C83FCC}.png)
+![]({A2A07F76-B941-451D-A4D3-3113D1C83FCC}.png)
 
 실행 방법
-![alt text]({71790F90-4ED8-4027-B674-6386FA231FF3}.png)
+![]({71790F90-4ED8-4027-B674-6386FA231FF3}.png)
 
 
 ```systemVerilog
@@ -147,11 +147,17 @@ endtask
 </details>
 
 ### UVM user guide
-![alt text]({64B30605-6ABA-4B3B-95D4-BB225B97C544}.png)
+![]({64B30605-6ABA-4B3B-95D4-BB225B97C544}.png)
 
 화살표를 받는 쪽이 부모, 보내는 쪽이 자식 class
-![alt text]({9E22DC93-E5E7-4453-A86E-822C12E5C691}.png)
+![]({9E22DC93-E5E7-4453-A86E-822C12E5C691}.png)
 
 
 이런 이상한 화살표는 instance를 내부에 포함하는 경우라고 한다.
-![alt text]({E32D7647-D74C-4852-BCE5-5FFC62F9480E}.png)
+![]({E32D7647-D74C-4852-BCE5-5FFC62F9480E}.png)
+
+
+### UVM Structure
+![](image-1.png)
+가장 simple한 uvm architecutre
+
