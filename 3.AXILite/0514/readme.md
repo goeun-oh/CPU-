@@ -38,3 +38,9 @@ vitis code
 ```c
 
 ```
+
+xilinx bug 잡기 (make file 오류 고치기)
+![alt text]({A34EDF2B-1D75-4464-8815-2684ECDF7B1F}.png)
+
+wildcard 안붙이면 컴파일할때 에러난다.
+![alt text]({E095A243-9CF4-4F04-826C-DE81DFC11658}.png)
