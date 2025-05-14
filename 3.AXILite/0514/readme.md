@@ -34,13 +34,58 @@ register 정보만 알면된다.
 - 현재 gpio mem map
 ![](img1.png)
 
-vitis code
-```c
-
-```
 
 xilinx bug 잡기 (make file 오류 고치기)
 ![alt text]({A34EDF2B-1D75-4464-8815-2684ECDF7B1F}.png)
 
 wildcard 안붙이면 컴파일할때 에러난다.
 ![alt text]({E095A243-9CF4-4F04-826C-DE81DFC11658}.png)
+
+
+---
+vcs -> compiler
+
+complie 방법
+![alt text]({65B41526-C060-4340-837C-A3DE8A1B7DEA}.png) -> 이러면 결과물인 `simv` 가 나온다.
+
+
+d: directory
+![alt text]({A2A07F76-B941-451D-A4D3-3113D1C83FCC}.png)
+
+실행 방법
+![alt text]({71790F90-4ED8-4027-B674-6386FA231FF3}.png)
+
+
+```systemVerilog
+program automatic test;
+        import uvm_pkg::*; //uvm pkg 땡겨온다.
+
+        class hello_world extends uvm_test;
+                `uvm_component_utils(hello_world)
+
+                function new(string name, uvm_component parent);
+                        super.new(name, parent);
+                endfunction
+
+
+                virtual task run_phase(uvm_phase phase);
+                        phase.raise_objection(this);
+                        `uvm_info("TEST", "hello world!", UVM_MEDIUM);
+                        phase.drop_objection(this);
+                endtask
+        endclass
+
+        initial begin
+                run_test();
+        end
+endprogram
+
+```
+<details>
+<summary> 설명 </summary>
+
+```
+program > test용 SW 묶음, block
+```
+
+</details>
