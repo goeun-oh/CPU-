@@ -84,8 +84,57 @@ endprogram
 <details>
 <summary> 설명 </summary>
 
+```systemVerilog
+program 
+// > test용 SW 묶음, block
 ```
-program > test용 SW 묶음, block
+
+```systemVerilog
+import uvm_pkg::*;
 ```
+> Accellera에서 제공하는 uvm 클래스 모든 라이브러리 다 갖다쓴다는 것을 의미
+
+`Accellera`에서 제공하는 UVM 클래스 라이브러리 전체 패키지 적용
+`Accellera`: UVM을 만들고 배포하는 단체
+
+```systemVerilog
+class hello_world extends uvm_test;
+...
+endclass
+```
+`extends`: 부모 class(`uvm_test`) 를 상속 받겠다는 의미.
+framework에 있는 것을 그대로 갖다 쓰기 때문에 상속 받아야 한다.
+`uvm_test` : uvm의 최상위 시나리오(test)용 base class, initial에 쓰인 `run_test()`도 얘가 포함한거
+-> `uvm_test`는 top level test class 임. 
+-> `uvm_test`는 `run_test()`를 실행할 때 factory가 가장 먼저 실행되는 객체임
+
+```systemVerilog
+`uvm_component_utils(hello_world)
+```
+-> factory에 class를 등록하는 매크로
+
+
+```systemVerilog
+function new(string name, uvm_component parent);
+        super.new(name, parent);
+endfunction
+```
+-> 클래스 인스턴스를 만들기 위한 생성자.
+-> `super` : 부모 클래스를 의미, 여기서는 `uvm_test`임.
+-> 해당 코드로 인해 class `hello_world`가 생성되면 부모 클래스 `uvm_test`도 함께 생성이된다.
+
+
+```systemVerilog
+virtual task run_phase(uvm_phase phase);
+        phase.raise_objection(this);
+        `uvm_info("TEST", "hello world!", UVM_MEDIUM);
+        phase.drop_objection(this);
+endtask
+```
+
+실제 동작 시뮬레이션 구간 phase, fork run 이랑 비슷하다고 생각하기
+**objection 메커니즘**
+`phase.raise_objection(this)` : helloworld의 해당 instance "할 일 있어요! 시뮬레이션 끝내지 마세요!"
+`phase.drop_objection(this)` : 이제 끝남
 
 </details>
