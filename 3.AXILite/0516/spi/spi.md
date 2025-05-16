@@ -56,4 +56,4 @@ MOSI는 data를 clk negedge에 송신
 MISO는 data를 clk rising edge에 수신
 
 ### FSM
-
+![](fsm.png)
