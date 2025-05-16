@@ -358,3 +358,14 @@ Makefile 실행
     DUT = $(RTL_DIR)/adder.v
     TEST_BENCH = $(TB_DIR)/tb_adder.sv
     LOG = simv.log
+
+
+- `-` 붙이면 에러 나면 다음줄로 넘어간다.
+    -mkdir build
+
+- `PHONY`
+파일과 명령어가 이름이 똑같을 경우 makefile에 선언되어 있는 이름의 file만 우선으로 동작시켜라
+
+
+simulation GUI "verdi" 활용
+![](../0516/readme.md)
