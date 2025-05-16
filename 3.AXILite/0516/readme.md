@@ -47,7 +47,8 @@ verdi:
 ![](verdi.png)
 
 - waveform 보기  
+**waveform 보기 위한 설정**
+<img src="waveform.png", width="50%"/>
 
-![waveform 보기 위한 설정](waveform.png)  
-
-![waveform 결과](wave_result.png)  
+**waveform 결과**
+<img src="wave_result.png", width="50%"/>
