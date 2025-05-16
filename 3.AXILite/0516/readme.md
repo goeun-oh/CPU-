@@ -60,7 +60,7 @@ verdi:
 
 ---
 ### Makefile 설명
-	
+[Makefile구조]
 	<target> : <dependency>
 		<TAB> <Recipe>
 
