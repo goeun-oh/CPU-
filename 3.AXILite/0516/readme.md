@@ -46,6 +46,6 @@ verdi:
 - verdi 실행 시 나오는 이미지
 ![](verdi.png)
 
--waveform 보기
-![waveform 보기 위한 설정](waveform.png)
-![waveform 결과](wave_result.png)
+- waveform 보기
+![waveform 보기 위한 설정](waveform.png)  
+![waveform 결과](wave_result.png)  
