@@ -29,10 +29,10 @@ Master가 Slave에 `MOSI`로 7번째 bit 보낼 때 Slave에서도 7번째 bit�
 따라서 read할 때 Master 에서 Slave로 dummy data를 전송해야함 (master가 보내야 slave data가 나온다, 두 선이 동기화 되어 있음)  
 
 
-# timing diagram
+### timing diagram
 ![](tim.png)
 
-## CPOL과 CPHA
+### CPOL과 CPHA
 **CPOL(Clock Polarity)**  
 `CPOL`이 0이면 clk 시작이 low, 1이면 clk 시작이 high  
 
@@ -47,11 +47,13 @@ Master가 Slave에 `MOSI`로 7번째 bit 보낼 때 Slave에서도 7번째 bit�
 CPOL, CPHA가 0인 경우는 data가 clk negedge에서 나가는 경우.
 clk 하강 에지를 본 후 data가 변화 -> delay 존재. 에지에서 바로 나가지 않는다.
 
+### schematic
+![](schematic.png)
+
 ### data 전송
 ![](tim3.png)
 MOSI는 data를 clk negedge에 송신
 MISO는 data를 clk rising edge에 수신
 
+### FSM
 
-### schematic
-![](schematic.png)
