@@ -2,22 +2,41 @@
 serial 통신 
 ### 신호선 구성 (4개)
 ![](image.png)
-- SCLK (CLK)
-- MOSI (Master Out Slave In)
-- MISO (Master In Slave Out)
-- CS (Chip Select)
+- SCLK (CLK)  
+- MOSI (Master Out Slave In)  
+- MISO (Master In Slave Out)  
+- CS (Chip Select)  
 
 ### 특징
-- synchronous 통신 방식 (master가 clk 생성)
-- Master <-> Slave 구조
-- 고속 통신 지원 (UART, I2C 에 비해 속도가 빠르다.)
-- 다중 장치 지원 
-    - 하나의 Master가 여러 Slave와 통신 가능 (BUS)
-    - data broadcasting, chip select
+- synchronous 통신 방식 (master가 clk 생성)  
+- Master <-> Slave 구조  
+- 고속 통신 지원 (UART, I2C 에 비해 속도가 빠르다.)  
+- 다중 장치 지원  
+    - 하나의 Master가 여러 Slave와 통신 가능 (BUS)  
+    - data broadcasting, chip select  
 
-
+### data 전달
 ![](image-1.png)
+Master -> Slave 로 MSB 부터 전달  
+-> Slave는 받은 bit를 shift 시켜야함 (MSB 부터 받았으니까)  
 
-![](image-2.png)
+Master가 Slave에 `MOSI`로 7번째 bit 보낼 때 Slave에서도 7번째 bit를 `MISO`를 통해 보낸다.  
 
+따라서 read할 때 Master 에서 Slave로 dummy data를 전송해야함 (master가 보내야 slave data가 나온다, 두 선이 동기화 되어 있음)  
+
+
+### timing diagram
+
+![](image-2.png)  
+
+**CPOL(Clock Polarity)**  
+`CPOL`이 0이면 clk 시작이 low, 1이면 clk 시작이 high  
+
+**CPHA(Clock Phase)**  
+`CPHA`이 1이면 sample 위치가 clk 2번째 edge 에서 sampling  
+0이면 clk 1번째 edge 에서 sampling  
+
+`CPOL`의 값에 따라서 rising edge인지 falling edge 인지 달라진다.  
+
+### 1 master multi slave 구조  
 ![](image-3.png)
