@@ -50,8 +50,8 @@ verdi:
 
 **waveform 보기 위한 설정**
 
-<img src="waveform.png", width="50%">
+<img src="waveform.png" width="50%">
 
 **waveform 결과**
 
-<img src="wave_result.png", width="50%">
+<img src="wave_result.png" width="50%">
