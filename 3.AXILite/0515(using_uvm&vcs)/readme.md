@@ -262,3 +262,86 @@ uvm이 실행되면 각 component(test, env, agent 등)들의 phase들이 순차
 
 여기서 `run phase`는 모두 동시 실행된다. (fork join_any 같은거임)
 
+
+
+----
+
+### 수정사항
+**test class 주석처리**
+
+```systemVerilog
+module tb_adder ();
+    //test adder_test;  //handler
+    adder_if a_if ();
+
+    always #5 a_if.clk = ~a_if.clk;
+
+    initial begin
+        a_if.clk   = 0;
+        //adder_test = new("TEST", null);
+        uvm_config_db#(virtual adder_if)::set(null, "*", "a_if", a_if);
+        //uvm_config_db library : database에 interface 정보를 저장할 수 있다.
+        run_test();  //test 안에 있는 program들이 실행 된다.
+    end
+```
+-> test class 주석 처리했는데 어떻게 instance?
+console에서 아래처럼 하면 자동으로 test instance
+    ./simv +UVM_TESTNAME=test -l simv.log
+
+
+**topology 확인 위해 build 와 run 사이에 새로운 phase 추가**
+```systemVerilog
+virtual function void start_of_simulation_phase(uvm_phase phase);
+    super.start_of_simulation_phase(phase);
+    uvm_root::get().print_topology();
+endfunction
+```
+
+결과로 아래와 같은 topology가 출력
+    --------------------------------------------------------------
+    Name                       Type                    Size  Value
+    --------------------------------------------------------------
+    uvm_test_top               test                    -     @341 
+        ENV                      adder_envirnment        -     @360 
+            AGT                    adder_agent             -     @388 
+                DRV                  adder_driver            -     @417 
+                    rsp_port           uvm_analysis_port       -     @436 
+                    seq_item_port      uvm_seq_item_pull_port  -     @426 
+                MON                  adder_monitor           -     @398 
+                    WRITE              uvm_analysis_port       -     @407 
+                SQR                  uvm_sequencer           -     @446 
+                    rsp_export         uvm_analysis_export     -     @455 
+                    seq_item_export    uvm_seq_item_pull_imp   -     @573 
+                    arbitration_queue  array                   0     -    
+                    lock_queue         array                   0     -    
+                    num_last_reqs      integral                32    'd1  
+                    num_last_rsps      integral                32    'd1  
+            SCO                    adder_scoreboard        -     @369 
+                READ                 uvm_analysis_imp        -     @378 
+    --------------------------------------------------------------
+
+
+**scoreboard에서 왜 20개?**
+-> scoreboard에서 info를 2번출력중임
+    ** Report counts by severity
+    UVM_INFO :   54
+    UVM_WARNING :    0
+    UVM_ERROR :    0
+    UVM_FATAL :    0
+    ** Report counts by id
+    [DRV]    10
+    [MON]    10
+    [RNTST]     1
+    [SCO]    20
+    [SEQ]    10
+    [TEST_DONE]     1
+    [UVM/RELNOTES]     1
+    [UVMTOP]     1
+
+
+**Makefile 만들기**
+![Makefile](./Makefile)
+
+Makefile 실행
+    make vcs
+    make simv

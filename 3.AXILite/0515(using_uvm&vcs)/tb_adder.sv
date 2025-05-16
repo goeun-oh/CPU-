@@ -41,6 +41,7 @@ class adder_sequence extends uvm_sequence #(adder_seq_item);
         for (int i = 0; i < 10; i++) begin
             start_item(adder_item);
             adder_item.randomize();
+            $display(""); //한 줄만 띄우기
             `uvm_info(
                 "SEQ", $sformatf(
                 "adder item to driver a:%0d, b:%0d", adder_item.a, adder_item.b
@@ -82,8 +83,8 @@ class adder_driver extends uvm_driver #(adder_seq_item);
 
             `uvm_info("DRV", $sformatf(
                       "Drive DUT a: %0d, b: %0d", a_if.a, a_if.b), UVM_LOW);
-
             //adder_item.print(uvm_default_line_printer);
+            #1; //driver에서 dut로 입력하고 다시 dut에서 출력이 나올때까지 살짝 대기 한다. (nonitor에서 처리할 시간을 주는 것)
             seq_item_port.item_done();
             //#10;
         end
@@ -114,7 +115,8 @@ class adder_monitor extends uvm_monitor;
     virtual task run_phase(uvm_phase phase);
         forever begin
             @(posedge a_if.clk);
-            #1;
+            #1; //dut에서 입력이 들어가고 처리될 시간을 살짝 준 후, output을 가져온다.
+            //1ns 동안 dut에서 처리가 되었다고 생각하는 것
             adder_item.a = a_if.a;
             adder_item.b = a_if.b;
             adder_item.y = a_if.y;
@@ -235,12 +237,18 @@ class test extends uvm_test;
         adder_env = adder_envirnment::type_id::create("ENV", this);
     endfunction
 
+    virtual function void start_of_simulation_phase(uvm_phase phase);
+        super.start_of_simulation_phase(phase);
+        uvm_root::get().print_topology();
+    endfunction
+
+
     virtual task run_phase(uvm_phase phase);  //overiding
         //test class 안에 있는 모든 것들을 실행시키는 task
-        phase.raise_objection(phase);
+        phase.raise_objection(this);
         adder_seq.start(
             adder_env.adder_agt.adder_sqr); //sequence와 sequencer는 다르다
-        phase.drop_objection(phase);  //objection 해제, run_phase 종료
+        phase.drop_objection(this);  //objection 해제, run_phase 종료
     endtask
 
 endclass  //test extends superClass;
@@ -248,14 +256,14 @@ endclass  //test extends superClass;
 
 
 module tb_adder ();
-    test adder_test;  //handler
+    //test adder_test;  //handler
     adder_if a_if ();
 
     always #5 a_if.clk = ~a_if.clk;
 
     initial begin
         a_if.clk   = 0;
-        adder_test = new("TEST", null);
+        //adder_test = new("TEST", null);
         uvm_config_db#(virtual adder_if)::set(null, "*", "a_if", a_if);
         //uvm_config_db library : database에 interface 정보를 저장할 수 있다.
         run_test();  //test 안에 있는 program들이 실행 된다.
