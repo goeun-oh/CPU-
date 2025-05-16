@@ -1,6 +1,7 @@
 ### 파일
 
 - [uvm 기반 adder 검증 testbench code](./tb_adder.sv)
+- [Makefile](./Makefile)
 
 ---
 ## Synopsys Verdi
