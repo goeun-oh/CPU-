@@ -1,6 +1,6 @@
 ### 파일
 
-- ![uvm 기반 adder 검증 testbench code](./tb_adder.sv)
+- [uvm 기반 adder 검증 testbench code](./tb_adder.sv)
 
 ---
 ## Synopsys Verdi
@@ -45,3 +45,7 @@ verdi:
 
 - verdi 실행 시 나오는 이미지
 ![](verdi.png)
+
+-waveform 보기
+![waveform 보기 위한 설정](waveform.png)
+![waveform 결과](wave_result.png)
