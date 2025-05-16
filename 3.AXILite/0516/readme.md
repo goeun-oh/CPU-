@@ -55,3 +55,37 @@ verdi:
 **waveform 결과**
 
 <img src="wave_result.png" width="80%">
+
+
+---
+### Makefile 설명
+	
+	<target> : <dependency>
+		<TAB> <Recipe>
+
+
+- <target> : <dependency>
+	```Makefile
+	all: vcs simv
+	#여기서 
+	#target: all
+	#dependency : vcs simv
+	```
+	- `make all`하면 target을 실행
+	- dependency인 `vcs`와 `simv`를 차례대로 실행
+
+- <dependency> 없는 경우
+	```Makefile
+	simv:
+		$(SIMV) $(SIMV_OPT) $(LOG)
+	```
+	`tap` 안하면 error 발생 !!
+
+- Recipe : 실행 코드
+
+- 변수, 매크로
+
+	RTL_DIR = ./rtl
+	TB_DIR = ./tb
+	BUILD_DIR = ./build
+	...
