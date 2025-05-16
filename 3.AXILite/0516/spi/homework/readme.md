@@ -6,7 +6,7 @@
 중간에 cs가 high가 될 수도? -> IDLE로 넘어가기
 
 board로 검증 어떻게?
-![](schematic.png)
+![](image.png)
 start는 button
 14개 switch로 txdata전송
 
