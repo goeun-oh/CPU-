@@ -345,3 +345,16 @@ endfunction
 Makefile 실행
     make vcs
     make simv
+
+**Makefile 쓰는 이유**
+변경된 부분만 compile해줘서 compile에 소요되는 시간을 줄여준다.ㄴ
+
+**Makefile 재사용성 높이기위해 파일 경로 변수화**
+    #재사용성을 높이기 위해 아래와 같이 경로 변수화
+    #경로는 현재 makefile 기준
+    RTL_DIR = ./rtl
+    TB_DIR = ./tb
+    BUILD = ./build
+    DUT = $(RTL_DIR)/adder.v
+    TEST_BENCH = $(TB_DIR)/tb_adder.sv
+    LOG = simv.log
