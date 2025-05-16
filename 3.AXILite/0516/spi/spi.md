@@ -31,6 +31,7 @@ Master가 Slave에 `MOSI`로 7번째 bit 보낼 때 Slave에서도 7번째 bit�
 
 ### timing diagram
 ![](tim.png)
+MISO는 slave에서 계속 들어오고 있음, but Master에서 sampling을 가운데서 수행
 
 ### CPOL과 CPHA
 **CPOL(Clock Polarity)**  
@@ -57,3 +58,27 @@ MISO는 data를 clk rising edge에 수신
 
 ### FSM
 ![](fsm.png)
+
+
+### ASM
+![](asm.png)
+- SCLK 생성하기
+SCLK 생성 logic
+![](sclk_asm.png)
+bps는 1MHz
+100MHz의 system CLK을 받아 1MHz의 SCLK 을 생성하자
+
+
+- MISO
+data를 가운데서 sampling 하는게 error 율이 작을 것
+
+- MOSI
+low edge에서 다음 비트 전송
+
+
+CPOL이 1일 때 기다려줘야 하는게 좀 까다롭다 함
+
+    Master에서는 negedge에서 MOSI 보냄, rising edge에서 MISO 받음
+    Slave 에서는 negedge에서 MISO 보냄, rising edge에서 MOSI 받음
+
+
