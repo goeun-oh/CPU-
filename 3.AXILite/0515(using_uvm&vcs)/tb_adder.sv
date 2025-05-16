@@ -38,7 +38,7 @@ class adder_sequence extends uvm_sequence #(adder_seq_item);
     virtual task body();
         adder_item = adder_seq_item::type_id::create("ADDER_ITEM");
 
-        for (int i = 0; i < 10; i++) begin
+        for (int i = 0; i < 100; i++) begin
             start_item(adder_item);
             adder_item.randomize();
             $display(""); //한 줄만 띄우기
