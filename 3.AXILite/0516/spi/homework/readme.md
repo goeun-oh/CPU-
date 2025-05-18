@@ -14,6 +14,9 @@ switch 조작후 button 누르기
 
 
 ---
+### schematic
+![](image-3.png)
+
 ### simulation 결과
 1. spi 모듈
 ![](image-2.png)
