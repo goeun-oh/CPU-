@@ -1,5 +1,9 @@
 ## SPI (Serial Peripheral Interface)
-serial 통신, rx-tx 구조
+![](spi.png)
+동기식 serial 통신 방식 중 한가지
+(serial 통신은 rx-tx 구조를 갖는다.)
+1대 다수의 통신을 지원한다. (다수의 통신을 위해서 다수만큼 선이 필요하다는 단점이 있음)
+동시에 송수신이 가능하며 I2C에 비해 속도가 빠르다.
 
 ### 신호선 구성 (4개)
 ![](image.png)
@@ -14,7 +18,9 @@ serial 통신, rx-tx 구조
 - 고속 통신 지원 (UART, I2C 에 비해 속도가 빠르다.)  
 - 다중 장치 지원  
     - 하나의 Master가 여러 Slave와 통신 가능 (BUS)  
-    - data broadcasting, chip select  
+    - data broadcasting, chip select 
+- SPI 장치들은 shift register를 가지고 있으며, 기본적으로 MSB 부터 전송된다. 밀어내기 식으로 data가 input 된다.
+![](spi_shiftreg.png) 
 
 ### 1 master multi slave 구조  
 ![](image-3.png)
