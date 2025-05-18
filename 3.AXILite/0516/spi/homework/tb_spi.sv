@@ -12,7 +12,7 @@ module tb_spi();
     logic       MOSI;
     logic       CS;
     logic       MISO;
-    logic [7:0] font;
+    logic [15:0] DATA;
 
     always #5 clk= ~clk;
 

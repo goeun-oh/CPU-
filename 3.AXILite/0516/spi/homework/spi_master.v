@@ -3,7 +3,6 @@
 module spi_master (
     input        clk,
     input        rst,
-    input        i_CS,
     output       SCLK,
     input  [7:0] tx_data,
     input        start,
@@ -17,7 +16,7 @@ module spi_master (
 
 
     parameter IDLE = 2'b00, CP0 = 2'b01, CP1 = 2'b10;
-    assign CS = i_CS;
+
     reg [1:0] state, state_next;
 
     reg [7:0] temp_tx_data_reg, temp_tx_data_next;
@@ -25,12 +24,12 @@ module spi_master (
     reg [2:0] bit_count_reg, bit_count_next;
     reg [$clog2(50)-1:0] clk_count_reg, clk_count_next;
     reg sclk_reg, sclk_next;
-//    reg cs_reg, cs_next;
+    reg cs_reg, cs_next;
     reg done_reg, done_next;
     reg ready_reg, ready_next;
 
     assign SCLK = sclk_reg;
-  //  assign CS = cs_reg;
+    assign CS = cs_reg;
     assign MOSI = temp_tx_data_reg[7];
     assign rx_data = rx_data_reg;
     assign ready = ready_reg;
@@ -41,7 +40,7 @@ module spi_master (
             state <= IDLE;
             temp_tx_data_reg <= 8'bz;
             sclk_reg <= 1'b0;
-  //          cs_reg <= 1'b1;
+            cs_reg <= 1'b1;
             clk_count_reg <= 0;
             rx_data_reg <= 0;
             bit_count_reg <= 0;
@@ -51,7 +50,7 @@ module spi_master (
             state <= state_next;
             temp_tx_data_reg <= temp_tx_data_next;
             sclk_reg <= sclk_next;
-    //        cs_reg <= cs_next;
+            cs_reg <= cs_next;
             clk_count_reg <= clk_count_next;
             rx_data_reg <= rx_data_next;
             bit_count_reg <= bit_count_next;
@@ -65,7 +64,7 @@ module spi_master (
         state_next = state;
         temp_tx_data_next = temp_tx_data_reg;
         sclk_next = sclk_reg;
-      //  cs_next = cs_reg;
+        cs_next = cs_reg;
         clk_count_next = clk_count_reg;
         rx_data_next = rx_data_reg;
         bit_count_next = bit_count_reg;
@@ -75,14 +74,14 @@ module spi_master (
             IDLE: begin
                 temp_tx_data_next = 8'bz;
                 sclk_next = 1'b0;
-        //        cs_next = 1'b1;
+                cs_next = 1'b1;
                 clk_count_next = 0;
                 bit_count_next = 0;
                 done_next = 1'b0;
                 ready_next = 1'b1;
                 if (start) begin
                     state_next = CP0;
-          //          cs_next = 1'b0;
+                    cs_next = 1'b0;
                     temp_tx_data_next = tx_data;
                     ready_next = 1'b0;
                 end

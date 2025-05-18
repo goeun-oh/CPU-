@@ -1,67 +1,42 @@
 `timescale 1ns / 1ps
 
 module spi_slave (
-    input        SCLK,
-    input        rst,
-    input        CS,
-    input        MOSI,
-    output       MISO,
-    output [7:0] font
+    input              SCLK,
+    input              CS,
+    input              MOSI,
+    output      [7:0] DATA,
+    output wire        MISO
 );
+ //   parameter IDLE=0, RUN=1;
 
+    reg shift_in;
+    reg [7:0] shift_reg;
+   // reg state;
 
-    parameter IDLE = 0, RUN = 1;
-
-    reg state, state_next;
-    reg [7:0] slv_reg, slv_reg_next;
-    reg [7:0] temp_slv_reg, temp_slv_reg_next;
-
-    assign MISO= temp_slv_reg[7];
-    assign font = slv_reg;
-
-    always @(posedge SCLK or posedge rst) begin
-        if (rst) begin
-            state <= IDLE;
-//            slv_reg <= 0;
-//            temp_slv_reg <= 0;
-        end else begin
-            state <=state_next;
- //           slv_reg <= slv_reg_next;
-  //          temp_slv_reg <= temp_slv_reg_next;
-        end
-    end
-
+    assign MISO = CS ? 1'bz : shift_reg[7];
+    assign DATA  = CS? shift_reg: 8'b0;
     
-
-
-    always @(*) begin
-        state_next = state;
- //       slv_reg_next = slv_reg;
- //       temp_slv_reg_next = temp_slv_reg;
-        case (state)
-            IDLE: begin
-                temp_slv_reg = 8'bz;
-                slv_reg = 0;
-                if (!CS) begin
-                    state_next = RUN;
-                    slv_reg ={slv_reg[6:0], MOSI};
-                    temp_slv_reg = slv_reg;
-                end
-            end
-            RUN: begin
-                if (!CS) begin
-                    if(SCLK) begin
-                        slv_reg = {slv_reg[6:0], MOSI};
-                    end else begin
-                        temp_slv_reg = {temp_slv_reg[6:0], 1'b0};
-                    end
-                end else begin
-                    state_next = IDLE;
-                end
-            end
-        endcase
+    // always @(*) begin
+    //     if(rst) state = IDLE;
+    //     case(state)
+    //         IDLE: begin
+    //             if(!CS) begin
+    //                 state = RUN;
+    //                 shift_in = MOSI;
+    //             end
+    //         end
+    //         RUN: begin
+    //             if(CS) begin
+    //                 state = IDLE;
+    //             end
+    //         end
+    //     endcase
+    // end
+    always @(posedge SCLK) begin
+        shift_in <= MOSI;
     end
 
-
-
+    always @(negedge SCLK) begin
+        shift_reg <= {shift_reg[6:0], shift_in};
+    end
 endmodule
