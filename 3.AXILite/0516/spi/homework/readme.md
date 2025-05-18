@@ -11,3 +11,12 @@ start는 button
 14개 switch로 txdata전송
 
 switch 조작후 button 누르기
+
+
+---
+### simulation 결과
+1. spi 모듈
+![](image-2.png)
+
+2. top 모듈
+![](image-1.png)
