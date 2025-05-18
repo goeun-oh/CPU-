@@ -28,15 +28,12 @@ module fndController (
         .y(fndCom)
     );
 
-    digitSplitter_o u_low (
-        .i_digit(fndData[7:0]),
-        .o_digit_1(w_digit_1),
-        .o_digit_10(w_digit_10)
-    );
-    digitSplitter_o u_high (
-        .i_digit(fndData[15:8]),
-        .o_digit_1(w_digit_100),
-        .o_digit_10(w_digit_1000)
+    digitSplitter U_DIGIT (
+        .i_digit   (fndData),
+        .o_digit_1 (w_digit_1),
+        .o_digit_10(w_digit_10),
+        .o_digit_100 (w_digit_100),
+        .o_digit_1000(w_digit_1000)
     );
 
 
@@ -113,6 +110,7 @@ module decoder (
         endcase
     end
 endmodule
+
 module mux (
     input [1:0] sel,
     input [3:0] x0,
@@ -161,13 +159,16 @@ module BCDtoSEG (
         endcase
     end
 endmodule
-module digitSplitter_o (
-    input  [7:0] i_digit,
-    output [3:0] o_digit_1,
-    output [3:0] o_digit_10
+
+module digitSplitter (
+    input  [15:0] i_digit,
+    output [ 3:0] o_digit_1,
+    output [ 3:0] o_digit_10,
+    output [ 3:0] o_digit_100,
+    output [ 3:0] o_digit_1000
 );
-    assign o_digit_1  = i_digit % 10;
+    assign o_digit_1 = i_digit % 10;
     assign o_digit_10 = i_digit / 10 % 10;
-
+    assign o_digit_100 = i_digit / 100 % 10;
+    assign o_digit_1000 = i_digit / 1000 % 10;
 endmodule
-

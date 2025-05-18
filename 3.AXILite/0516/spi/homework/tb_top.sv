@@ -15,7 +15,7 @@ module tb_top();
         @(posedge clk);
         rst=1;
         @(posedge clk);
-        rst=0; number=16'haabb;
+        rst=0; number=14'd127;
         #10;    
         btn=1;
         #100;
