@@ -1,5 +1,5 @@
-## 설계 방법론
-### SCLK 생성 logic
+# 설계 방법
+## SCLK 생성 logic
 ![](img.png)
 CPHA가 0일 때와 1일 때 차이점은 1일 때가 0일때의 반주기 delay 인것 밖에 없음
 
@@ -30,6 +30,31 @@ delay X, CP0 일 때 High
 delay 존재, CP1 일 때 High.
 
 
+## 상용 spi doc 참고하여 spi slave 설계
+addr의 MSB를 보고 read mode인지 write mode인지 결정한다.
+
+### read mode
+![](readmode.png)
+주소를 받고, 그 다음 해당 주소의 data를 보낸다.
+read시 dummy data를 보내야 하는데, read mode 일 때는 dummy data를 저장하면 안된다.
+
+**read state machine**
+![](readFSM.png)
+
+### write mode
+![](writemode.png)
+SPI slave에 register 들이 존재하고, master가 write 하기 위해 register를 select 해야한다.
+따라서 먼저 주소를 보내고, 그 다음 data를 보낸다.
+
+![](writemode2.png)
+사실 write mode에서 쓰기와 읽기가 동시에 일어나게 된다.
+(주소를 보내고, SDO로 data가 들어오니까)
+
+**write state machine**
+
+
+ex) rtc register map (시계 칩이다!.. 근데 SPI를 사용하는..)
+![](rtc_registerMap.png)
 
 ### SPI Slave mode 설정하기
 slave에 따라 mode 설정이 다르고 정해져있다.
@@ -41,7 +66,3 @@ slave에 따라서 master가 알맞는 CPHA, CPOL을 설정해야 한다.
 
 
 
-### 상용 spi doc 참고하여 spi slave 설계
-![](readmode.png)
-
-![](writemode.png)
