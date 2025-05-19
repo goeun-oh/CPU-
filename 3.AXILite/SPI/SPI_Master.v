@@ -28,7 +28,7 @@ module SPI_Master (
 
     wire r_sclk;
     
-    assign r_sclk = ((state_next == CP1) && !CPHA)||((state_next == CP0) && CPHA);
+    assign r_sclk = ((state == CP1) && !CPHA)||((state == CP0) && CPHA);
 
     assign MOSI = temp_tx_data_reg[7];
     assign rx_data = temp_rx_data_reg;
