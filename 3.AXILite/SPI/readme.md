@@ -30,9 +30,24 @@ delay X, CP0 일 때 High
 delay 존재, CP1 일 때 High.
 
 
-## 상용 spi doc 참고하여 spi slave 설계
-addr의 MSB를 보고 read mode인지 write mode인지 결정한다.
+## SPI Slave mode 설정하기
+slave에 따라 mode 설정이 다르고 정해져있다.
+Slave에서 CPHA, CPOL을 설정하는 경우는 없다(고정되어서 나온다.) 
+slave에 따라서 master가 알맞는 CPHA, CPOL을 설정해야 한다.
 
+- ex 1) mt41t93의 경우 CPOL=0, CPHA=0으로 설정하는 slave임
+![](mt41t93.png)
+
+ex) rtc register map (시계 칩이다!.. 근데 SPI를 사용하는..)
+![](rtc_registerMap.png)
+
+
+# 상용 spi doc 참고하여 spi slave 설계 (rtc chip)
+![](img1.png)
+addr의 MSB를 보고 read mode인지 write mode인지 결정한다.
+- 1이면 write mode, 0이면 read mode
+
+## write/read mode
 ### read mode
 ![](readmode.png)
 주소를 받고, 그 다음 해당 주소의 data를 보낸다.
@@ -53,16 +68,13 @@ SPI slave에 register 들이 존재하고, master가 write 하기 위해 registe
 **write state machine**
 
 
-ex) rtc register map (시계 칩이다!.. 근데 SPI를 사용하는..)
-![](rtc_registerMap.png)
+## SPI slave Interface 모듈 설계
+![](schematic.png)
+- register addr
+총 4개의 register가 존재하고, 각각의 register는 8bit이다.  
+들어오는 addr의 MSB를 통해 read/write mode 결정하고, LSB 쪽 2 bit은 reigster address로 사용한다.
 
-### SPI Slave mode 설정하기
-slave에 따라 mode 설정이 다르고 정해져있다.
-Slave에서 CPHA, CPOL을 설정하는 경우는 없다(고정되어서 나온다.) 
-slave에 따라서 master가 알맞는 CPHA, CPOL을 설정해야 한다.
+- register write data
+addr의 MSB가 1인 경우, 2번째 들어오는 data부터 저장한다.
 
-- ex 1) mt41t93의 경우 CPOL=0, CPHA=0으로 설정하는 slave임
-![](mt41t93.png)
-
-
-
+- register read data
