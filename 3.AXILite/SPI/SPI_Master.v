@@ -5,13 +5,15 @@ module SPI_Master (
     input            clk,
     input            rst,
     // internal signal
+    input            CPOL,
+    input            CPHA,
     input            start,
     input      [7:0] tx_data,
     output     [7:0] rx_data,
     output reg       done,
     output reg       ready,
     // external signal
-    output reg       SCLK,
+    output           SCLK,
     output           MOSI,
     input            MISO
 );
@@ -24,8 +26,11 @@ module SPI_Master (
     reg [2:0] bit_counter_reg, bit_counter_next;
     reg [7:0] temp_rx_data_reg, temp_rx_data_next;
 
+    reg r_sclk;
+
     assign MOSI = temp_tx_data_reg[7];
     assign rx_data = temp_rx_data_reg;
+    assign SCLK = CPOL ? ~r_sclk : r_sclk; 
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
@@ -51,7 +56,7 @@ module SPI_Master (
         temp_rx_data_next = temp_rx_data_reg;
         sclk_counter_next = sclk_counter_reg;
         bit_counter_next = bit_counter_reg;
-        SCLK = 0;
+        r_sclk = 0;
 
         case (state)
             IDLE: begin
@@ -67,7 +72,7 @@ module SPI_Master (
                 end
             end
             CP0: begin
-                SCLK = 0;
+                r_sclk = 0;
                 if (sclk_counter_reg == 50 - 1) begin
                     state_next = CP1;
                     temp_rx_data_next = {temp_rx_data_reg[6:0], MISO};
@@ -77,7 +82,7 @@ module SPI_Master (
                 end
             end
             CP1: begin
-                SCLK = 1;
+                r_sclk = 1;
                 if (sclk_counter_reg == 50 - 1) begin
                     if (bit_counter_reg == 8 - 1) begin
                         done = 1;

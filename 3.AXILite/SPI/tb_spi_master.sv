@@ -11,22 +11,24 @@ module  tb_spi_master();
     logic       SCLK;
     logic       MOSI;
     logic       MISO;
+    logic CPOL;
+    logic CPHA;
 
     always #5 clk = ~clk;
 
     initial begin
         clk =0; rst=1;
-        #10 rst =0;
+        #10 rst =0; CPOL = 0; CPHA = 0;
         
         repeat (3) @(posedge clk);
 
-        start = 1; tx_data = 8'haa;
+        start = 1; tx_data = 8'haa; 
         @(posedge clk);
         start =0;
         wait(done);
         @(posedge clk);
 
-        start = 1; tx_data = 8'hbb; 
+        start = 1; tx_data = 8'hbb; CPOL = 1;
         @(posedge clk);
         start =0;
         wait(done);
