@@ -80,3 +80,5 @@ IP가 위에 참고한 상용칩처럼 rtc가 될수도 있고, mt41t93처럼 me
 addr의 MSB가 1인 경우, 2번째 들어오는 data부터 저장한다.  
 
 - register read data
+
+![](FSM.png)
