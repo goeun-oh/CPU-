@@ -5,6 +5,33 @@
 1대 다수의 통신을 지원한다. (다수의 통신을 위해서 다수만큼 선이 필요하다는 단점이 있음)
 동시에 송수신이 가능하며 I2C에 비해 속도가 빠르다.
 
+> device와 device 간 연결 시 wire가 적게 들어 싸다.
+
+> spi와 i2c 많이 쓰는 이유
+  uart는 1:1 통신, 확장성이 별로 좋지 않다.
+  spi, i2c는 1:다수 통신이 가능하여 확장성이 좋다.
+
+### UART vs SPI vs I2C
+| Feature | UART | SPI | I2C |
+|---------|------|-----|-----|
+| Type    | Asynchronous | Synchronous | Synchronous |
+| 전송방식 | 1:1 | 1:다수 | 1:다수 |
+| line 수 | tx, rx | MOSI, MISO, SCLK, CS | SCL, SDA(주소, data) |
+| 이중통신 | full-duplex | full-duplex | half-duplex |
+| (상대적인)속도 | 느리다(spi보다) | 빠르다(uart, i2c 보다) | 느리다(spi 보다) |
+| (상대적인)구현난이도 | simple | simple | complex |
+
+- I2C는 선 하나(`SDA`)로 주소와 data를 모두 받는다, data를 보낼 떄 주소를 붙여서 보낸다. 
+    -> 구조 자체가 SPI 에 비해 빠를 수가 없음
+    - but 현장에서는 I2C를 더 많이 쓴다. 
+        - 선 가닥이 2개 밖에 없기 때문 
+        - SPI는 slave가 늘어날 경우 CS를 늘려야 하는데 I2C는 이 경우 편리(선 두가닥만 연결하면 됨)
+        - 이미 만들어진 통신 모듈을 갖다 쓰는 사람 입장에서는 I2C가 가장 편리 but 구현은 I2C가 상대적으로 가장 복잡
+
+- SPI Line 수 의 경우 master 입장에서 봤을 때 Slave가 늘어남에 따라 CS가 늘어날 수 있다.
+- UART는 속도를 높일 경우 error율이 높아지기 때문에 속도를 높이는데 한계가 존재
+- 속도가 빠른게 필요할 때 : SPI, 속도 ㄱㅊ, simple한게 필요 : I2C
+
 ### 신호선 구성 (4개)
 ![](image.png)
 - SCLK (CLK)  
