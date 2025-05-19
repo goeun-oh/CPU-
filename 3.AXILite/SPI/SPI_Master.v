@@ -18,7 +18,7 @@ module SPI_Master (
     input            MISO
 );
 
-    localparam IDLE = 0, CP0 = 1, CP1 = 2;
+    localparam IDLE = 0, CP_DELAY = 1, CP0 = 2, CP1 = 3;
 
     reg [1:0] state, state_next;
     reg [7:0] temp_tx_data_reg, temp_tx_data_next;
@@ -26,7 +26,9 @@ module SPI_Master (
     reg [2:0] bit_counter_reg, bit_counter_next;
     reg [7:0] temp_rx_data_reg, temp_rx_data_next;
 
-    reg r_sclk;
+    wire r_sclk;
+    
+    assign r_sclk = ((state_next == CP1) && !CPHA)||((state_next == CP0) && CPHA);
 
     assign MOSI = temp_tx_data_reg[7];
     assign rx_data = temp_rx_data_reg;
@@ -56,7 +58,6 @@ module SPI_Master (
         temp_rx_data_next = temp_rx_data_reg;
         sclk_counter_next = sclk_counter_reg;
         bit_counter_next = bit_counter_reg;
-        r_sclk = 0;
 
         case (state)
             IDLE: begin
@@ -64,15 +65,24 @@ module SPI_Master (
                 done = 0;
                 ready = 1;
                 if (start) begin
-                    state_next        = CP0;
+                    state_next = CPHA ? CP_DELAY : CP0;
                     ready             = 0;
                     temp_tx_data_next = tx_data;
                     sclk_counter_next = 0;
                     bit_counter_next  = 0;
                 end
             end
+            
+            CP_DELAY: begin
+                if (sclk_counter_reg == 50 - 1) begin
+                    state_next = CP0;    
+                    sclk_counter_next = 0;
+                end else begin
+                    sclk_counter_next = sclk_counter_reg + 1;
+                end
+            end
+
             CP0: begin
-                r_sclk = 0;
                 if (sclk_counter_reg == 50 - 1) begin
                     state_next = CP1;
                     temp_rx_data_next = {temp_rx_data_reg[6:0], MISO};
@@ -81,8 +91,8 @@ module SPI_Master (
                     sclk_counter_next = sclk_counter_reg + 1;
                 end
             end
+
             CP1: begin
-                r_sclk = 1;
                 if (sclk_counter_reg == 50 - 1) begin
                     if (bit_counter_reg == 8 - 1) begin
                         done = 1;

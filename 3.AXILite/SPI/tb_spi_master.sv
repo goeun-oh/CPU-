@@ -18,7 +18,7 @@ module  tb_spi_master();
 
     initial begin
         clk =0; rst=1;
-        #10 rst =0; CPOL = 0; CPHA = 0;
+        #10 rst =0; CPOL = 1; CPHA = 1;
         
         repeat (3) @(posedge clk);
 
@@ -27,13 +27,6 @@ module  tb_spi_master();
         start =0;
         wait(done);
         @(posedge clk);
-
-        start = 1; tx_data = 8'hbb; CPOL = 1;
-        @(posedge clk);
-        start =0;
-        wait(done);
-        @(posedge clk);
-
         #50 $finish;
     end
 
