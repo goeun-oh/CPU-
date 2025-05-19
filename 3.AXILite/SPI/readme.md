@@ -28,3 +28,13 @@ delay X, CP0 일 때 High
 **CPOL = 1, CPHA = 1, Mode = 3**
 ![](case4.png)
 delay 존재, CP1 일 때 High.
+
+
+
+### SPI Slave mode 설정하기
+slave에 따라 mode 설정이 다르고 정해져있다.
+Slave에서 CPHA, CPOL을 설정하는 경우는 없다(고정되어서 나온다.) 
+slave에 따라서 master가 알맞는 CPHA, CPOL을 설정해야 한다.
+
+- ex 1) mt41t93의 경우 CPOL=0, CPHA=0으로 설정하는 slave임
+![](mt41t93.png)
