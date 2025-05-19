@@ -38,3 +38,10 @@ slave에 따라서 master가 알맞는 CPHA, CPOL을 설정해야 한다.
 
 - ex 1) mt41t93의 경우 CPOL=0, CPHA=0으로 설정하는 slave임
 ![](mt41t93.png)
+
+
+
+### 상용 spi doc 참고하여 spi slave 설계
+![](readmode.png)
+
+![](writemode.png)
