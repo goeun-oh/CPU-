@@ -231,7 +231,6 @@ module SPI_Slave_Reg (
         state_next    = state;
         addr_next     = addr_reg;
         so_start_next = so_start_reg;
-        so_data_next = so_
         case (state)
             IDLE: begin
                 so_start_next = 1'b0;
