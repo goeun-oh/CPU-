@@ -18,7 +18,6 @@
     // external port
       output wire SCL,
       inout wire SDA,
-      output [7:0] LED,
       // User ports ends
       // Do not modify the ports beyond this line
 
@@ -46,7 +45,6 @@
       output wire  s00_axi_rvalid,
       input wire  s00_axi_rready
    );
-
    wire [7:0] tx_data;
    wire tx_done, ready, start, i2c_en, stop;
 // Instantiation of Axi Bus Interface S00_AXI
@@ -97,14 +95,6 @@
       .SDA(SDA)
    );
 
-
-   I2C_Slave U_I2C_Slave(
-      .clk(s00_axi_aclk),
-      .reset(s00_axi_aresetn),
-      .SCL(SCL),
-      .SDA(SDA),
-      .LED(LED)
-   );
    // User logic ends
 
    endmodule
