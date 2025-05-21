@@ -1,7 +1,11 @@
 
 `timescale 1 ns / 1 ps
+//reg:
+// 0x00: TWCR(Control Reg)
+// 2: TWSTA(start), 1: TWSTO(stop), 0: TWEN(enable)
+// 0x04: TWDR (Data Reg)
 
-   module SPIip_v1_0_S00_AXI #
+   module I2C_v1_0_S00_AXI #
    (
       // Users to add parameters here
 
@@ -16,12 +20,13 @@
    (
       // Users to add ports here
         // external port
-        output wire cpol,
-        output wire cpha,
-        output wire start,
-        output wire [7:0] mo_data,
-        input wire [7:0] mi_data,
-        input wire ready,
+
+      output wire [7:0] tx_data,
+      input wire tx_done,
+      input wire ready,
+      output wire start,
+      output wire i2c_en,
+      output wire stop,
       // User ports ends
       // Do not modify the ports beyond this line
 
@@ -228,8 +233,8 @@
        begin
          slv_reg0 <= 0;
          slv_reg1 <= 0;
-       //   slv_reg2 <= 0;
-       //   slv_reg3 <= 0;
+ //        slv_reg2 <= 0;
+         //slv_reg3 <= 0;
        end 
      else begin
        if (slv_reg_wren)
@@ -376,10 +381,10 @@
    begin
          // Address decoding for reading registers
          case ( axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
-           2'h0   : reg_data_out <= slv_reg0;
+           2'h0   : reg_data_out <= slv_reg0[2:0];
            2'h1   : reg_data_out <= slv_reg1[7:0]; 
-           2'h2   : reg_data_out <= {24'b0, mi_data};//slv_reg2;
-           2'h3   : reg_data_out <= {31'b0, ready};
+           2'h2   : ;//reg_data_out <= slv_reg2[7:0];//slv_reg2;
+           2'h3   : ;//reg_data_out <= {31'b0, ready};
            default : reg_data_out <= 0;
          endcase
    end
@@ -404,11 +409,11 @@
    end    
 
    // Add user logic here
-    assign cpol = slv_reg0[0];
-    assign cpha = slv_reg0[1];
-    assign start = slv_reg0[2];
-    assign mo_data = slv_reg1[7:0];
+  assign start = slv_reg0[2]; 
+  assign stop = slv_reg0[1]; 
+  assign i2c_en = slv_reg0[0];
 
+  assign tx_data = slv_reg1[7:0]; 
     // GPI
     // assign slv_reg2[7:0] = mi_data;
     // assign slv_reg3[0] = ready;
@@ -416,138 +421,3 @@
 
    endmodule
 
-`timescale 1ns / 1ps
-
-module SPI_Master (
-    // global signal
-    input clk,
-    input reset,
-
-    // internal signal
-    input start,
-    input [7:0] tx_data,
-    output [7:0] rx_data,
-    output reg done,
-    output reg ready,
-
-    //external port
-    output sclk,
-    output mosi,
-    input  miso,
-
-    input cpol,
-    input cpha
-);
-
-    localparam IDLE = 0, CP_DELAY =1, CP0 = 2, CP1 = 3;
-
-    //reg r_sclk;
-    reg [1:0] state, state_next;
-    reg [7:0] temp_tx_data_next, temp_tx_data_reg;
-    reg [5:0] sclk_counter_next, sclk_counter_reg;
-    reg [2:0] bit_counter_next, bit_counter_reg;
-    reg [7:0] temp_rx_data_next, temp_rx_data_reg;
-
-    assign mosi = temp_tx_data_reg[7];
-    assign rx_data = temp_rx_data_reg;
-
-    assign r_sclk = ((state_next == CP1) && ~cpha) || 
-                    ((state_next == CP0) && cpha);
-    assign sclk = cpol ? ~r_sclk : r_sclk; // cpol에 따른 sclk 변경 (0,1중 무엇으로 시작할지)
-
-    always @(posedge clk) begin
-        if (!reset) begin
-            state <= IDLE;
-            temp_tx_data_reg <= 0;
-            temp_rx_data_reg <= 0;
-            bit_counter_reg <= 0;
-            sclk_counter_reg <= 0;
-        end
-
-        else begin
-            state <= state_next;
-            temp_tx_data_reg <= temp_tx_data_next;
-            temp_rx_data_reg <= temp_rx_data_next;
-            bit_counter_reg <= bit_counter_next;
-            sclk_counter_reg <= sclk_counter_next;
-        end
-    end
-
-    always @(*) begin
-        state_next = state;
-        temp_tx_data_next = temp_tx_data_reg;
-        temp_rx_data_next = temp_rx_data_reg;
-        bit_counter_next = bit_counter_reg;
-        sclk_counter_next = sclk_counter_reg;
-        ready = 0;
-        done = 0;
-       // r_sclk = 0;
-
-        case (state)
-            IDLE: begin
-                temp_tx_data_next = 0;
-                done = 0;
-                ready = 1;
-                if (start) begin
-                    state_next = cpha ? CP_DELAY: CP0;
-                    temp_tx_data_next = tx_data;
-                    ready = 0;
-                    sclk_counter_next = 0;
-                    bit_counter_next = 0;
-                end
-            end 
-
-            CP_DELAY: begin
-                if (sclk_counter_reg == 49) begin
-                    sclk_counter_next = 0;
-                    state_next = CP0;
-                end
-
-                else begin
-                    sclk_counter_next = sclk_counter_reg + 1;
-                end
-            end
-
-            CP0: begin
-               // r_sclk = 0;
-                if (sclk_counter_reg == 49) begin // 수신 (sclk 0 -> 1)
-                    temp_rx_data_next = {temp_rx_data_reg[6:0], miso};
-                    sclk_counter_next = 0;
-                    state_next = CP1;
-                end
-
-                else begin
-                    sclk_counter_next = sclk_counter_reg + 1;
-                end
-            end
-
-            CP1: begin
-             //   r_sclk = 1;
-                if (sclk_counter_reg == 49) begin // 송신 (sclk 1 -> 0)
-                    if (bit_counter_reg == 7) begin
-                        done = 1;
-                        state_next = IDLE;
-                        //bit_counter_next = 0;
-                    end
-                    else begin
-                        temp_tx_data_next = {temp_tx_data_reg[6:0], 1'b0};
-                        sclk_counter_next = 0;
-                        state_next = CP0;
-                        bit_counter_next = bit_counter_reg + 1;
-                    end
-                end
-
-                else begin
-                    sclk_counter_next = sclk_counter_reg + 1;
-                end
-            end
-
-
-
-        endcase
-    end
-
-
-
-
-endmodule
