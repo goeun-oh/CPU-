@@ -158,3 +158,12 @@ slave한테 이제 바이트 보내지말라고 알려주는거
 SDA가 High일 때 SCL이 low->high->low 로 바뀔때
 회색 ACK는 Master가 보내는 ACK
 
+---
+구현
+### Start/Stop
+
+
+
+### Data
+![](data0.png)
+Data4 일때 `tx_data={tx_data[6:0], 1'b0}` 해야함
