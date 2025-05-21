@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module SPI_Master (
+module I2C_Master (
     input            clk,
     input            reset,
     input      [7:0] tx_data,
@@ -13,7 +13,7 @@ module SPI_Master (
     inout            SDA
 );
 
-    parameter IDLE=0, START1=1, START2=2, DATA1=3, DATA2=4, DATA3=5, DATA4=6, HOLD=7, STOP1=8, STOP2=9;
+    parameter IDLE=0, START1=1, START2=2, DATA1=3, DATA2=4, DATA3=5, DATA4=6, HOLD=7, ACK1=8, ACK2=9, ACK3=10, ACK4=11, STOP1=12, STOP2=13;
     parameter FCOUNT = 500;
     reg [3:0] state, state_next;
     reg o_data;
@@ -54,7 +54,6 @@ module SPI_Master (
                 SCL = 1'b1;
                 o_data = 1'b1;
                 ready = 1;
-                tx_done = 0;
                 if (start && i2c_en) begin
                     state_next = START1;
                     sclk_counter_next = 0;
@@ -66,9 +65,7 @@ module SPI_Master (
                 en = 1'b1;
                 o_data = 1'b0;
                 SCL = 1'b1;
-                ready = 0;
-                tx_done = 0;
-                if (sclk_counter_next == FCOUNT - 1) begin
+                if (sclk_counter_reg == FCOUNT - 1) begin
                     state_next = START2;
                     sclk_counter_next = 0;
                 end else begin
@@ -79,9 +76,7 @@ module SPI_Master (
                 en = 1'b1;
                 o_data = 1'b0;
                 SCL = 1'b0;
-                ready = 0;
-                tx_done = 0;
-                if (sclk_counter_next == FCOUNT - 1) begin
+                if (sclk_counter_reg == FCOUNT - 1) begin
                     ready = 1;
                     if (i2c_en) begin
                         sclk_counter_next = 0;
@@ -96,9 +91,7 @@ module SPI_Master (
                 en = 1'b1;
                 o_data = temp_tx_data_reg[7];
                 SCL = 1'b0;
-                ready = 0;
-                tx_done = 0;
-                if (sclk_counter_next == 250 - 1) begin
+                if (sclk_counter_reg == 250 - 1) begin
                     state_next = DATA2;
                     sclk_counter_next = 0;
                 end else begin
@@ -109,9 +102,7 @@ module SPI_Master (
                 en = 1'b1;
                 o_data = temp_tx_data_reg[7];
                 SCL = 1'b1;
-                ready = 0;
-                tx_done = 0;
-                if (sclk_counter_next == 250 - 1) begin
+                if (sclk_counter_reg == 250 - 1) begin
                     state_next = DATA3;
                     sclk_counter_next = 0;
                 end else begin
@@ -122,9 +113,7 @@ module SPI_Master (
                 en = 1'b1;
                 o_data = temp_tx_data_reg[7];
                 SCL = 1'b1;
-                ready = 0;
-                tx_done = 0;
-                if (sclk_counter_next == 250 - 1) begin
+                if (sclk_counter_reg == 250 - 1) begin
                     state_next = DATA4;
                     sclk_counter_next = 0;
                 end else begin
@@ -135,21 +124,58 @@ module SPI_Master (
                 en = 1'b1;
                 o_data = temp_tx_data_reg[7];
                 SCL = 1'b0;
-                ready = 0;
-                tx_done = 0;
-                if (sclk_counter_next == 250 - 1) begin
-                    //ACK는 지금 생각안할것.. 나중에
-
-
+                if (sclk_counter_reg == 250 - 1) begin
                     if (bit_counter_reg == 8 - 1) begin
-                        state_next = HOLD;
+                        state_next = ACK1;
                         tx_done = 1;
+                        en = 1'b0;
+                        sclk_counter_next = 0;
                     end else begin
                         bit_counter_next = bit_counter_reg + 1;
                         sclk_counter_next = 0;
                         state_next = DATA1;
                         temp_tx_data_next = {temp_tx_data_reg[6:0], 1'b0};
                     end
+                end else begin
+                    sclk_counter_next = sclk_counter_reg + 1;
+                end
+            end
+            ACK1: begin
+                en = 1'b0;
+                SCL=1'b0;
+                if(sclk_counter_reg == 250 -1) begin
+                    state_next = ACK2;
+                    sclk_counter_next = 0;
+                end else begin
+                    sclk_counter_next = sclk_counter_reg + 1;
+                end
+            end
+            ACK2: begin
+                en = 1'b0;
+                SCL = 1'b1;
+                if(sclk_counter_reg == 250-1) begin
+                    state_next = ACK3;
+                    sclk_counter_next =0;
+                end else begin
+                    sclk_counter_next = sclk_counter_reg + 1;
+                end
+            end
+            ACK3 : begin
+                en=1'b0;
+                SCL = 1'b1;
+                if(sclk_counter_reg == 250-1) begin
+                    state_next = ACK4;
+                    sclk_counter_next =0;
+                end else begin
+                    sclk_counter_next = sclk_counter_reg + 1;
+                end
+            end
+            ACK4 : begin
+                en=1'b0;
+                SCL = 1'b0;
+                if(sclk_counter_reg == 250-1) begin
+                    state_next = HOLD;
+                    sclk_counter_next =0;
                 end else begin
                     sclk_counter_next = sclk_counter_reg + 1;
                 end
@@ -164,7 +190,11 @@ module SPI_Master (
                     case ({
                         start, stop
                     })
-                        2'b10: state_next = DATA1;
+                        2'b00: begin 
+                            state_next = DATA1;
+                            temp_tx_data_next = tx_data;
+                        end
+                        2'b10: state_next = START1;
                         2'b01: state_next = STOP1;
                     endcase
                 end
