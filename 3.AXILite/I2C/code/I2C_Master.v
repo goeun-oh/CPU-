@@ -43,6 +43,11 @@ module SPI_Master (
         sclk_counter_next = sclk_counter_reg;
         temp_tx_data_next = temp_tx_data_reg;
         bit_counter_next = bit_counter_reg;
+        tx_done =0;
+        o_data = 1'b1;
+        ready = 0;
+        SCL= 1'b0;
+        en= 1'b1;
         case (state)
             IDLE: begin
                 en = 1'b1;
