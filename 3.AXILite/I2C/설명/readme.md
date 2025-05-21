@@ -160,6 +160,7 @@ SDA가 High일 때 SCL이 low->high->low 로 바뀔때
 
 ---
 구현
+![](schematic.png)
 ### Start/Stop
 
 
@@ -167,3 +168,25 @@ SDA가 High일 때 SCL이 low->high->low 로 바뀔때
 ### Data
 ![](data0.png)
 Data4 일때 `tx_data={tx_data[6:0], 1'b0}` 해야함
+
+
+write data 받아서 led 불 켜보기
+slave address는 개발자 마음
+![](project.png)
+
+
+slave
+![]({14051A33-89C6-42A9-8B37-09A09780EC3D}.png)
+
+상승에지일때 sampling
+(clk이 low edge일 때 data가 변경됨, clk이 상승돼서 high로 유지될때는 data가 안정된 상태이기때문)
+slave가 master 쪽으로 보낼때는 clk이 하강에지일때 변경하면됨
+
+
+최종
+![]({69E91FF1-13D6-49A3-B6C4-85C72ACB6432}.png)
+basys3 보드 두개 쓰기, 하나는 master, 하나는 slave
+
+
+saleae logic analyzer software
+위 도구로 분석
