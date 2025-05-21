@@ -18,6 +18,7 @@
     // external port
       output wire SCL,
       inout wire SDA,
+      output [7:0] LED,
       // User ports ends
       // Do not modify the ports beyond this line
 
@@ -101,7 +102,8 @@
       .clk(s00_axi_aclk),
       .reset(s00_axi_aresetn),
       .SCL(SCL),
-      .SDA(SDA)
+      .SDA(SDA),
+      .LED(LED)
    );
    // User logic ends
 
