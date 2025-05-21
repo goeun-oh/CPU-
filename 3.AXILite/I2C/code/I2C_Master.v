@@ -130,6 +130,7 @@ module I2C_Master (
                         tx_done = 1;
                         en = 1'b0;
                         sclk_counter_next = 0;
+                        bit_counter_next =0;
                     end else begin
                         bit_counter_next = bit_counter_reg + 1;
                         sclk_counter_next = 0;
