@@ -45,16 +45,16 @@ int main()
 
     xil_printf("send start: Start=%d, STOP=%d, EN=%d\n", (I2C->CR)& (1<<2),(I2C->CR)& (1<<1),(I2C->CR)& (1<<0));
     I2C->CR = (1 << 2) | (1 << 0);  // start + en
-    xil_printf("Start=%d, STOP=%d, EN=%d\n", (I2C->CR)& (1<<2),(I2C->CR)& (1<<1),(I2C->CR)& (1<<0));
-
+    I2C -> CR &= ~(1<<0);
     while(is_ready(I2C) ==0);
     usleep(1);
-   // I2C->CR &= ~(1 << 2);
+    I2C -> DATA = 0xaa;
+    I2C->CR = (I2C->CR & ~(1 << 2)) | (1 << 0);
+    data_I2C(I2C, 0x01);
+    while(is_ready(I2C)==0);
+    I2C->CR &= ~(1 << 0);
 
-    //I2C -> DATA = 0xaa;
-    //xil_printf("Start=%d, STOP=%d, EN=%d\n", (I2C->CR)& (1<<2),(I2C->CR)& (1<<1),(I2C->CR)& (1<<0));
-
-    //    data_I2C(I2C, 0xaa);
+    I2C -> CR = (1<<1) | (1<<0);
     /*xil_printf("complete: Start=%d, STOP=%d, EN=%d\n", (I2C->CR)& (1<<2),(I2C->CR)& (1<<1),(I2C->CR)& (1<<0));
     while(is_ready(I2C) ==0);
     xil_printf("ready: Start=%d, STOP=%d, EN=%d\n", (I2C->CR)& (1<<2),(I2C->CR)& (1<<1),(I2C->CR)& (1<<0));
