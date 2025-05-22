@@ -4,7 +4,8 @@ module I2C_Slave(
     input clk,
     input reset,
     input SCL,
-    inout SDA,
+    input SDA,
+//    inout SDA,
     output [7:0] LED
 );
     parameter IDLE=0, ADDR=1, ACK0=2, ACK1=3, ACK2=4, DATA=5, DACK0=6, DACK1 = 7, DACK2=8, DACK3=9, STOP=10;
@@ -18,7 +19,7 @@ module I2C_Slave(
     
     reg sclk_sync0, sclk_sync1;
     reg [7:0] led_reg, led_next;
-    assign SDA= en? o_data: 1'bz;
+//    assign SDA= en? o_data: 1'bz;
     assign LED=led_reg;
     always @(posedge clk or posedge reset) begin
         if(reset) begin
@@ -89,7 +90,7 @@ module I2C_Slave(
             ACK2: begin
                 en=1'b1;
                 o_data = 1'b0;
-                if(sclk_falling) begin
+                if(!SDA) begin
                     state_next= DATA;
                 end
             end

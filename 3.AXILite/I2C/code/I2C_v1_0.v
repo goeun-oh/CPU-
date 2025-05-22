@@ -18,6 +18,7 @@
     // external port
       output wire SCL,
       inout wire SDA,
+      output wire [15:0] LED,
       // User ports ends
       // Do not modify the ports beyond this line
 
@@ -92,7 +93,8 @@
       .i2c_en(i2c_en),
       .stop(stop),
       .SCL(SCL),
-      .SDA(SDA)
+      .SDA(SDA),
+      .LED(LED)
    );
 
    // User logic ends

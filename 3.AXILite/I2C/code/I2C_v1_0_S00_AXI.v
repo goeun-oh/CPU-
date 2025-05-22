@@ -233,8 +233,8 @@
        begin
          slv_reg0 <= 0;
          slv_reg1 <= 0;
- //        slv_reg2 <= 0;
-         //slv_reg3 <= 0;
+         slv_reg2 <= 0;
+         slv_reg3 <= 0;
        end 
      else begin
        if (slv_reg_wren)
@@ -383,7 +383,7 @@
          case ( axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
            2'h0   : reg_data_out <= slv_reg0[2:0];
            2'h1   : reg_data_out <= slv_reg1[7:0]; 
-           2'h2   : ;//reg_data_out <= slv_reg2[7:0];//slv_reg2;
+           2'h2   : reg_data_out <= {29'b0,tx_done,ready};//slv_reg2;
            2'h3   : ;//reg_data_out <= {31'b0, ready};
            default : reg_data_out <= 0;
          endcase
