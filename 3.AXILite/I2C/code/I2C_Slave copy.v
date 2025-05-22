@@ -12,13 +12,15 @@ module I2C_Slave(
 
     reg [3:0] state, state_next;
     reg [7:0] temp_rx_data_reg, temp_rx_data_next;
+    reg [7:0] temp_tx_data_reg, temp_tx_data_next;
     reg [7:0] temp_addr_reg, temp_addr_next;
     reg [7:0] bit_counter_reg, bit_counter_next;
     reg en;
     reg o_data;
-    
+    reg [7:0] slv_reg0_reg, slv_reg0_next;
     reg sclk_sync0, sclk_sync1;
     reg [7:0] led_reg, led_next;
+    reg ACK_reg, ACK_next;
 //    assign SDA= en? o_data: 1'bz;
     assign LED=led_reg;
     always @(posedge clk or posedge reset) begin
@@ -27,17 +29,23 @@ module I2C_Slave(
             sclk_sync0 <=0;
             sclk_sync1 <=0;
             temp_rx_data_reg <=0;
+            temp_tx_data_reg <=0;
             bit_counter_reg <=0;
             temp_addr_reg <=0;
             led_reg <=0;
+            slv_reg0_reg <=0;
+            ACK_reg <=0;
         end else begin
             state <= state_next;
             sclk_sync0 <= SCL;
             sclk_sync1 <= sclk_sync0;
             temp_rx_data_reg <= temp_rx_data_next;
+            temp_tx_data_reg <= temp_tx_data_next;
             bit_counter_reg <= bit_counter_next;
             temp_addr_reg <= temp_addr_next;
             led_reg <= led_next;
+            slv_reg0_reg <= slv_reg0_next;
+            ACK_reg <= ACK_next;
         end
     end
 
@@ -49,8 +57,11 @@ module I2C_Slave(
         en = 1'b0;
         o_data = 1'b0;
         temp_rx_data_next = temp_rx_data_reg;
+        temp_tx_data_next = temp_tx_data_reg;
         bit_counter_next = bit_counter_reg;
         temp_addr_next = temp_addr_reg;
+        slv_reg0_next = slv_reg0_reg;
+        ACK_next = ACK_reg;
         case (state)
             IDLE: begin
                 if(SCL && ~SDA) begin
@@ -91,7 +102,26 @@ module I2C_Slave(
                 en=1'b1;
                 o_data = 1'b0;
                 if(!SDA) begin
-                    state_next= DATA;
+                    if(!temp_addr_reg[0]) begin
+                        state_next= DATA;
+                    end else begin
+                        state_next = READ;
+                        temp_tx_data_next = slv_reg0_reg;
+                        bit_counter_next = 0;
+                    end
+                end
+            end
+            READ: begin
+                en=1'b1;
+                o_data = temp_tx_data_reg[7];
+                if(sclk_rising) begin
+                    if (bit_counter_reg == 8-1) begin
+                        state_next = DACK0;
+                        bit_counter_next = 0;
+                    end else begin
+                        bit_counter_next = bit_counter_reg + 1;
+                        temp_tx_data_next = {temp_tx_data_reg[6:0], 1'b0};
+                    end
                 end
             end
             DATA: begin
@@ -99,42 +129,50 @@ module I2C_Slave(
                     temp_rx_data_next = {temp_rx_data_reg[6:0], SDA};
                     if (bit_counter_reg == 8-1) begin
                         bit_counter_next = 0;
-                        state_next = DACK0;
+                        state_next = NACK0;
                     end else begin
                         bit_counter_next = bit_counter_reg + 1;
                     end
                 end
             end
-            DACK0: begin
+            NACK0: begin
+                en = !temp_addr_reg[0];
+                o_data = 1'b1; //NACK
+                ACK_next = SDA;
                 if(sclk_falling) begin
-                    state_next= DACK1;
+                    state_next= NACK1;
                 end
             end
-            DACK1: begin
-                en=1'b1;
-                o_data= 1'b0;
+            NACK1: begin
+                en=!temp_addr_reg[0];
+                o_data= 1'b1; //NACK
                 if(sclk_rising) begin
-                    state_next= DACK2;
+                    state_next= NACK2;
                 end
             end
-            DACK2: begin
-                en=1'b1;
-                o_data= 1'b0;
+            NACK2: begin
+                en=!temp_addr_reg[0];
+                o_data= 1'b1; //NACK
                 if(sclk_falling) begin
-                    state_next= DACK3;
+                    state_next= NACK3;
                 end
             end
-            DACK3: begin
-                en=1'b1;
-                o_data = 1'b0;
+            NACK3: begin
+                en=!temp_addr_reg[0];
+                o_data = 1'b1; //NACK
                 if(sclk_rising) begin
-                    state_next= STOP;
+                    if(!ACK_reg) begin
+                        state_next = READ;
+                    end else begin
+                        state_next = STOP;
+                    end
                 end
             end
             STOP: begin
                 if(SDA && SCL) begin
                     state_next = IDLE;
                     led_next = temp_rx_data_reg;
+                    slv_reg0_next = temp_rx_data_reg;
                 end
             end
         endcase

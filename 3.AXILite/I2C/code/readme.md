@@ -11,6 +11,7 @@ ___
 이제 READ 고려해야함.
 + ACK? 신호 처리는?
 ACK를 저장할 register를 하나더 만든 후, C언어에서 주소 전송 후 ACK를 받았다면 다음 DATA나 STOP 을 보내게 해야함
+burst 전송 X, 그냥 read 1번 write 한번만
 
 ---
 
