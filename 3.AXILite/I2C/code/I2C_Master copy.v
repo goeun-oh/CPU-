@@ -4,7 +4,7 @@ module I2C_Master (
     input            clk,
     input            reset,
     input      [7:0] tx_data,
-    output reg       tx_done, //곧 ACK 같은 역할?
+    output           tx_done, //곧 ACK 같은 역할?
     output reg       ready,
     input            start,
     input            i2c_en,
@@ -20,13 +20,17 @@ module I2C_Master (
     reg [3:0] state, state_next;
     reg o_data;
     reg en;
+    reg tx_done_reg, tx_done_next;
     reg [$clog2(FCOUNT)-1:0] sclk_counter_reg, sclk_counter_next;
     reg [7:0] temp_tx_data_reg, temp_tx_data_next;
+    reg [7:0] temp_rx_data_reg, temp_rx_data_next;
     reg [3:0] bit_counter_reg, bit_counter_next;
     reg [15:0] led_reg, led_next;
+    reg read;
     assign SDA = en? o_data: 1'bz;
     assign LED= led_reg;
 
+    assign tx_done = tx_done_reg;
     always @(posedge clk or negedge reset) begin
         if (!reset) begin
             state <= IDLE;
@@ -34,12 +38,16 @@ module I2C_Master (
             temp_tx_data_reg <= 8'b1111_1111;
             bit_counter_reg <= 0;
             led_reg <=0;
+            tx_done_reg <= 0;
+            temp_rx_data_reg <= 0;
         end else begin
             state <= state_next;
             sclk_counter_reg <= sclk_counter_next;
             temp_tx_data_reg <= temp_tx_data_next;
             bit_counter_reg <= bit_counter_next;
             led_reg <= led_next;
+            tx_done_reg <= tx_done_next;
+            temp_rx_data_reg <= temp_rx_data_next;
         end
     end
 
@@ -47,13 +55,15 @@ module I2C_Master (
         state_next = state;
         sclk_counter_next = sclk_counter_reg;
         temp_tx_data_next = temp_tx_data_reg;
+        temp_rx_data_next = temp_rx_data_reg;
         bit_counter_next = bit_counter_reg;
-        tx_done =0;
+        tx_done_next = tx_done_reg;
         o_data = 1'b1;
         ready = 0;
         SCL= 1'b0;
         en= 1'b1;
         led_next = 0;
+        read=0;
         case (state)
             IDLE: begin
                 SCL = 1'b1;
@@ -95,7 +105,6 @@ module I2C_Master (
                 SCL = 1'b0;
                 o_data = 1'b0;
                 ready = 1;
-                tx_done = 0;
                 led_next[3]=1'b1;
 
                 if (i2c_en) begin
@@ -104,14 +113,73 @@ module I2C_Master (
                     })
                         2'b00: begin 
                             state_next = DATA1;
+                            tx_done_next = 0;
+                            read = 0;
                             temp_tx_data_next = tx_data;
                         end
                         //2'b10: state_next = START1;
-                        2'b01: state_next = STOP1;
+                        2'b01: begin
+                            state_next = STOP1;
+                            tx_done_next = 0;
+                        end
+                        2'b11: begin
+                            read=1;
+                            state_next = READ1;
+                            tx_done_next = 0;
+                        end
                         default: state_next= HOLD;
                     endcase
                 end
             end
+            READ1: begin
+                en=1'b0;
+                SCL = 1'b0;
+                if (sclk_counter_reg == 250 - 1) begin
+                    state_next = READ2;
+                    sclk_counter_next = 0;
+                end else begin
+                    sclk_counter_next = sclk_counter_reg + 1;
+                end
+            end
+            READ2: begin
+                en=1'b0;
+                SCL = 1'b1;
+                temp_rx_data_next={temp_rx_data_reg[6:0], SDA};
+                if (sclk_counter_reg == 250 - 1) begin
+                    state_next = READ3;
+                    sclk_counter_next = 0;
+                end else begin
+                    sclk_counter_next = sclk_counter_reg + 1;
+                end
+            end
+            READ3: begin
+                en=1'b0;
+                SCL = 1'b1;
+                if (sclk_counter_reg == 250 - 1) begin
+                    state_next = READ4;
+                    sclk_counter_next = 0;
+                end else begin
+                    sclk_counter_next = sclk_counter_reg + 1;
+                end
+            end
+            READ4: begin
+                en=1'b0;
+                SCL = 1'b0;
+                if (sclk_counter_reg == 250 - 1) begin
+                    if (bit_counter_reg == 8 - 1) begin
+                        state_next = ACK1;
+                        sclk_counter_next = 0;
+                        bit_counter_next = 0;
+                    end else begin
+                        bit_counter_next = bit_counter_reg + 1;
+                        sclk_counter_next = 0;
+                        state_next = READ1;
+                    end
+                end else begin
+                    sclk_counter_next = sclk_counter_reg + 1;
+                end
+            end
+ 
 
             DATA1: begin
                 o_data = temp_tx_data_reg[7];
@@ -157,7 +225,6 @@ module I2C_Master (
                 if (sclk_counter_reg == 250 - 1) begin
                     if (bit_counter_reg == 8 - 1) begin
                         state_next = ACK1;
-                        tx_done = 1;
                         en = 1'b0;
                         sclk_counter_next = 0;
                         bit_counter_next =0;
@@ -172,7 +239,7 @@ module I2C_Master (
                 end
             end
             ACK1: begin
-                en=1'b0;
+                en=read?1'b1:1'b0;
                 SCL=1'b0;
                 led_next[8]=1'b1;
 
@@ -187,7 +254,7 @@ module I2C_Master (
                 en=1'b0;
                 SCL = 1'b1;
                 led_next[9]=1'b1;
-
+                tx_done_next = !SDA;
                 if(sclk_counter_reg == 250-1) begin
                     state_next = ACK3;
                     sclk_counter_next =0;
