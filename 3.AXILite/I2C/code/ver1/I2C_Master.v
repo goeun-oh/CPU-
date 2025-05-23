@@ -184,6 +184,7 @@ module I2C_Master (
                     if(bit_counter_reg ==8-1) begin
                         state_next = READ_ACK;
                         bit_counter_next =0;
+                        ready=1;
                     end else begin
                         bit_counter_next = bit_counter_reg + 1;
                     end
@@ -221,6 +222,7 @@ module I2C_Master (
             READ_ACK: begin
                 scl_en = 1'b1;
                 o_data = 1'b0;
+                ready=1;
                 led_next[7] = 1'b1;
                 if (tick_sample) begin
                     state_next = HOLD;
