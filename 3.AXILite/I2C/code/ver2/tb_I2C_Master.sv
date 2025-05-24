@@ -11,6 +11,7 @@ module tb_I2C_Master();
     logic       stop;
     logic       SCL;
     logic [7:0] LED;
+    logic rx_done;
     tri1 SDA;
 
     logic [7:0] slv_reg0;

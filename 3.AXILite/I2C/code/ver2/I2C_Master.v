@@ -195,7 +195,6 @@ module I2C_Master (
                         state_next = READ_HOLD;
                         bit_counter_next =0;
                         slv_count_next = slv_count_reg +1;
-                        rx_done_next = 1;
                     end else begin
                         bit_counter_next = bit_counter_reg + 1;
                     end
@@ -206,7 +205,7 @@ module I2C_Master (
                 scl_en=1;
                 led_next = 16'b0000_0000_0010_0000;
                 ready=1;
-                rx_done_next=1;
+                rx_done_next = 1;
                 if(slv_count_reg == 4) begin
                     state_next = READ_NACK;
                 end else begin

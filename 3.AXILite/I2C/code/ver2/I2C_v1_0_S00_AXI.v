@@ -151,6 +151,11 @@
 
 	always @(*) begin
 		slv_count_next = slv_count_reg;
+		DATA1_next = DATA1;
+		DATA2_next = DATA2;
+		DATA3_next = DATA3;
+		DATA4_next = DATA4;
+
 		if(rx_done) begin
 			slv_count_next = slv_count_reg +1;
 			case(slv_count_reg)
