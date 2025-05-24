@@ -6,13 +6,12 @@ module I2C_Slave(
     input SCL,
     inout SDA,
     //output [7:0] LED
-    output [15:0] LED
-    /*
+    output [15:0] LED,
     output [7:0] slv_reg0,
     output [7:0] slv_reg1,
     output [7:0] slv_reg2,
-    output [7:0] slv_reg3,
-    */
+    output [7:0] slv_reg3
+
     
 );
     parameter IDLE=0, ADDR=1, ACK=2, READ=3, DATA=4, READ_ACK=5, READ_CNT=6, DATA_ACK = 7, DATA_NACK=8, STOP=9;
@@ -31,6 +30,10 @@ module I2C_Slave(
 
     reg sclk_sync0, sclk_sync1;
     wire sclk_rising, sclk_falling;
+
+    reg sda_sync0, sda_sync1;
+    wire sda_rising, sda_falling;
+
     reg [7:0] slv_reg0_reg, slv_reg0_next;
     reg [7:0] slv_reg1_reg, slv_reg1_next;
     reg [7:0] slv_reg2_reg, slv_reg2_next;
@@ -39,13 +42,12 @@ module I2C_Slave(
     reg [15:0] led_reg, led_next;
     assign SDA= en? o_data: 1'bz;
     assign LED=led_reg;
-    /*
+    
     assign slv_reg0 = slv_reg0_reg;
     assign slv_reg1 = slv_reg1_reg;
     assign slv_reg2 = slv_reg2_reg;
     assign slv_reg3 = slv_reg3_reg;
-    */
-
+    
     //always @(posedge clk or posedge reset) begin
     //   if(reset) begin
     //       state <= IDLE;
@@ -77,6 +79,8 @@ module I2C_Slave(
              state <= IDLE;
              sclk_sync0 <=1;
              sclk_sync1 <=1;
+             sda_sync0 <=1;
+             sda_sync1 <=1;
              temp_rx_data_reg <=0;
              temp_tx_data_reg <=0;
              bit_counter_reg <=0;
@@ -87,6 +91,8 @@ module I2C_Slave(
              state <= state_next;
              sclk_sync0 <= SCL;
              sclk_sync1 <= sclk_sync0;
+             sda_sync0 <= SDA;
+             sda_sync1  <= sda_sync0;
              temp_rx_data_reg <= temp_rx_data_next;
              temp_tx_data_reg <= temp_tx_data_next;
              bit_counter_reg <= bit_counter_next;
@@ -114,6 +120,9 @@ module I2C_Slave(
 
     assign sclk_rising = sclk_sync0 & ~sclk_sync1;
     assign sclk_falling = ~sclk_sync0 & sclk_sync1;
+
+    assign sda_rising = sda_sync0 & ~sda_sync1;
+    assign sda_falling = ~sda_sync0 & sda_sync1;
 
     always @(*) begin
         state_next = state;
@@ -191,16 +200,16 @@ module I2C_Slave(
                     read_ack_next= SDA;
                 end
                 if(sclk_falling) begin
-                    if(read_ack_reg ==1'b0) begin
+                    if(read_ack_reg ==1'b1) begin
                         state_next = STOP;
                         read_ack_next= 1'bz;
-                    end else if (read_ack_reg == 1'b1) begin
+                    end else if (read_ack_reg == 1'b0) begin
                         state_next= READ_CNT;
                         slv_count_next = slv_count_reg +1;
                         read_ack_next = 1'bz;
                     end
                 end
-                if(slv_count_reg == 4-1) begin
+                if(slv_count_reg == 3) begin
                     state_next = STOP;
                 end
             end
@@ -229,8 +238,8 @@ module I2C_Slave(
                 if (sclk_falling) begin
                     if (bit_counter_reg == 8-1) begin
                         bit_counter_next = 0;
-                        slv_count_next= slv_count_reg + 1;
                         state_next = DATA_ACK;
+                        slv_count_next= slv_count_reg + 1;
                         case(slv_count_reg)
                             2'd0: begin
                                 slv_reg0_next = temp_rx_data_reg;
@@ -249,22 +258,21 @@ module I2C_Slave(
                         bit_counter_next = bit_counter_reg + 1;
                     end
                 end
+                if(SCL && sda_rising) begin
+                    state_next = STOP;
+                end
             end
             DATA_ACK: begin
                 led_next[15:8] = 8'b000_0010;
                 en=1'b1;
                 o_data =1'b0;
                 if(sclk_falling) begin
-                    if(slv_count_reg == 4-1) begin
-                        state_next = STOP;    
-                    end else begin
-                        state_next= DATA;
-                    end
+                    state_next= DATA;
                 end
             end
             STOP: begin
                 led_next[15:8] = 8'b000_0001;
-                if(!SDA && sclk_rising) begin
+                if(SDA && SCL) begin
                     state_next = IDLE;
                 end
             end

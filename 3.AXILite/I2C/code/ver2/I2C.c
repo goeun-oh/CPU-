@@ -35,8 +35,8 @@ typedef struct{
 //I2C//
 void start_I2C(I2C_Typedef *I2Cx);
 void stop_I2C(I2C_Typedef *I2Cx);
-void data_I2C(I2C_Typedef *I2Cx, uint32_t data);
-uint32_t read_I2C(I2C_Typedef *I2Cx);
+void data_I2C(I2C_Typedef *I2Cx);
+void read_I2C(I2C_Typedef *I2Cx);
 void delay(int n);
 void set_I2C(I2C_Typedef *I2Cx);
 void set_en(I2C_Typedef *I2Cx);
@@ -55,7 +55,10 @@ enum {IDLE, START, SET_EN_0, DATA, DATA_EN, STOP};
 int main()
 {
     //초기 변수//
-	uint32_t fndData;
+	uint32_t fndData1;
+	uint32_t fndData2;
+	uint32_t fndData3;
+	uint32_t fndData4;
 	I2C -> CR =0x00;
 
     //초기 IDLE
@@ -68,67 +71,101 @@ int main()
     while(is_ready(I2C) ==0);
 
     /***********address*************/
+    delay(5);
     I2C -> WDATA =0xaa;
-
-
-    
-
-/*
-    I2C->CR = (1 << 2) | (1 << 0);  // start + en
-    I2C -> CR &= ~(1<<0); //not en
-    while(is_ready(I2C) ==0);
-    usleep(1);
-    //start 끝
-
-    I2C -> WDATA = 0xaa; //주소 데이터를 줬어
-    I2C->CR = (I2C->CR & ~(1 << 2)) | (1 << 0); // 001 data+en
-    I2C -> CR &= ~(1<<0); //not en
-
-    while(is_ready(I2C) ==0);
-    //주소 다 갈때까지 기다림
-
-    I2C -> WDATA= 0x01;
-    I2C->CR = (I2C->CR & ~(1 << 2)) | (1 << 0); // 001 data+en
-    I2C -> CR &= ~(1<<0); //not en
-    while(is_ready(I2C) ==0);
-
-    //데이터 다 갈때까지 기다림
-
-    I2C -> CR = (1<<1) | (1<<0); //stop +en
-    I2C -> CR &= ~(1<<0); //not en
-    while(is_ready(I2C) ==0);
-
-    //IDLE 될때까지 기다림
-
-
-    start_I2C(I2C);
-    I2C -> CR &= ~(1<<0); //not en
-    while(is_ready(I2C) ==0);
-
-    usleep(1);
-    //start 끝
-
-
-    I2C -> WDATA = 0xab; //주소 데이터를 줬어
-    I2C->CR = (I2C->CR & ~(1 << 2)) | (1 << 0); // 001 data+en
-    I2C -> CR &= ~(1<<0); //not en
-    while(is_ready(I2C) ==0);
-
-	I2C -> CR = 0x07;
-	I2C -> CR = 0x00;
-	while(is_ready(I2C) ==0);
-	fndData = (I2C -> RDATA) & 0xff;
-
-	write_fndFont(FND, fndData);
-    I2C -> CR = 0x03; //stop +en
+    data_I2C(I2C);
     I2C -> CR =0x00;
-*/
-/*
-    //주소 다 갈때까지 기다림
-    xil_printf("*********");
-    fndData=read_I2C(I2C);
+    while(is_ready(I2C) ==0);
+
+
+    /***********data0*************/
+    delay(5);
+    I2C -> WDATA =0x01;
+    data_I2C(I2C);
+    I2C -> CR =0x00;
+    while(is_ready(I2C) ==0);
+
+    /***********data1*************/
+    delay(5);
+    I2C -> WDATA =0x02;
+    data_I2C(I2C);
+    I2C -> CR =0x00;
+    while(is_ready(I2C) ==0);
+
+    /***********data2*************/
+    delay(5);
+    I2C -> WDATA =0x03;
+    data_I2C(I2C);
+    I2C -> CR =0x00;
+    while(is_ready(I2C) ==0);
+
+    /***********data3*************/
+    delay(5);
+    I2C -> WDATA =0x04;
+    data_I2C(I2C);
+    I2C -> CR =0x00;
+    while(is_ready(I2C) ==0);
+
+    /***********stop*************/
+    delay(5);
+    stop_I2C(I2C);
+    delay(5);
+    I2C -> CR =0x00;
+    while(is_ready(I2C) ==0);
+
+    /***********start*************/
+    delay(5);
+    start_I2C(I2C);
+    delay(5);
+    I2C -> CR =0x00;
+    while(is_ready(I2C) ==0);
+
+    /***********address*************/
+    delay(5);
+    I2C -> WDATA =0xab;
+    data_I2C(I2C);
+    I2C -> CR =0x00;
+
+
+    /***********read*************/
+    while(is_ready(I2C) ==0);
+    read_I2C(I2C);
     I2C -> CR = 0x00;
-    write_fndFont(FND, fndData);
+    usleep(70);
+
+    xil_printf("%d\n", I2C->RDATA);
+
+    while(is_ready(I2C) ==0);
+
+    xil_printf("%d\n", I2C->RDATA);
+
+
+    stop_I2C(I2C);
+    xil_printf("%d\n", I2C->RDATA);
+
+    sleep(1);
+    /*    I2C->CR=0x00;
+    while(is_ready(I2C) == 1); //ready가 0 될때까지 대기
+    xil_printf("%d\n", (I2C->RDATA));
+
+    read_I2C(I2C); //read 신호 줌
+    I2C->CR=0x00;
+    while(is_ready(I2C) == 0);
+    xil_printf("%d\n", I2C->RDATA);
+
+    read_I2C(I2C); //read 신호 줌
+    I2C->CR=0x00;
+    while(is_ready(I2C) == 1); //ready가 0 될때까지 대기
+    xil_printf("%d\n", I2C->RDATA);
+
+    read_I2C(I2C); //read 신호 줌
+    I2C->CR=0x00;
+    while(is_ready(I2C) == 0);
+    xil_printf("%d\n", I2C->RDATA);
+
+    stop_I2C(I2C);
+    I2C->CR=0x00;
+    sleep(1);
 */
     return 0;
 }
@@ -143,15 +180,11 @@ void start_I2C(I2C_Typedef *I2Cx){
 void stop_I2C(I2C_Typedef *I2Cx){
     I2Cx -> CR = 0x03; //011
 }
-void data_I2C(I2C_Typedef *I2Cx, uint32_t data){
-    I2Cx -> WDATA = data;
+void data_I2C(I2C_Typedef *I2Cx){
     I2Cx -> CR = 0x01;
 }
-
-uint32_t read_I2C(I2C_Typedef *I2Cx){
+void read_I2C(I2C_Typedef *I2Cx){
 	I2Cx -> CR = 0x07;
-	usleep(50);
-    return I2Cx -> RDATA;
 }
 
 
